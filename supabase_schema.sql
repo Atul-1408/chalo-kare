@@ -45,41 +45,40 @@ alter table public.donation_offers enable row level security;
 
 -- 4. Policies to allow public visitors to submit data and view approved records
 -- Campaigns policies
+drop policy if exists "Allow anyone to submit campaigns" on public.campaigns;
 create policy "Allow anyone to submit campaigns" 
   on public.campaigns for insert with check (true);
 
+drop policy if exists "Allow anyone to read campaigns" on public.campaigns;
 create policy "Allow anyone to read campaigns" 
   on public.campaigns for select using (true);
 
+drop policy if exists "Allow client to update campaigns" on public.campaigns;
 create policy "Allow client to update campaigns" 
   on public.campaigns for update using (true);
 
+drop policy if exists "Allow client to delete campaigns" on public.campaigns;
 create policy "Allow client to delete campaigns" 
   on public.campaigns for delete using (true);
 
 -- Donation Offers policies
+drop policy if exists "Allow anyone to submit donation offers" on public.donation_offers;
 create policy "Allow anyone to submit donation offers" 
   on public.donation_offers for insert with check (true);
 
+drop policy if exists "Allow anyone to read donation offers" on public.donation_offers;
 create policy "Allow anyone to read donation offers" 
   on public.donation_offers for select using (true);
 
+drop policy if exists "Allow client to update donation offers" on public.donation_offers;
 create policy "Allow client to update donation offers" 
   on public.donation_offers for update using (true);
 
+drop policy if exists "Allow client to delete donation offers" on public.donation_offers;
 create policy "Allow client to delete donation offers" 
   on public.donation_offers for delete using (true);
 
 -- ==============================================================================
--- Sample initial test data (Optional)
+-- CLEANUP / PURGE DEMO RECORDS (Optional - Run if you want to wipe demo data)
 -- ==============================================================================
-insert into public.campaigns (organizer, place, title, category, goal, story, status)
-values 
-  ('Dr. Rajesh Sharma', 'Mumbai Central', 'Help Meera take her next step', 'Medical', 500000, 'Support Meera recovery and rehabilitation journey after accidental injury.', 'approved'),
-  ('Vidyadaan Trust', 'Mulund', 'A new school year full of possibilities', 'Education', 200000, 'Providing school kits, notebooks and tuition fee support for 50 children.', 'approved'),
-  ('Karuna Animal Care', 'Thane', 'Emergency Medical & Food Care for 40 Stray Dogs', 'Animal Welfare', 120000, 'Daily feeding, rabies vaccination and winter bedding in Wagle Estate area.', 'approved');
-
-insert into public.donation_offers (donor_name, phone, place, category, items_description, status)
-values
-  ('Kavita Sharma', '9820011223', 'Thane West', 'Books & Stationery', 'Class 8-10 CBSE textbooks and unused notebooks in great condition.', 'available'),
-  ('Rahul Mehta', '9819922334', 'Dadar, Mumbai', 'Clothes, Footwear & Blanket', '15 warm blankets and clean winter clothes for elderly and kids.', 'available');
+-- TRUNCATE TABLE public.campaigns, public.donation_offers;
