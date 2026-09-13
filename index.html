@@ -248,6 +248,10 @@
       gap: 10px;
       font-size: 14px;
       font-weight: 600;
+      transition: all .25s ease;
+    }
+    #toast[hidden] {
+      display: none !important;
     }
 
     dialog {
@@ -402,7 +406,7 @@
         <!-- CTAs -->
         <div class="flex flex-wrap gap-3.5 mt-8">
           <a class="btn" href="#donation">Donate Items <span aria-hidden="true">↗</span></a>
-          <a class="btn secondary" href="#submit-section">Offer Item / Start Campaign</a>
+          <a class="btn secondary" href="#submit-section" onclick="switchSubmissionTab('campaign')">Start Campaign</a>
         </div>
 
         <!-- Live Impact Stats -->
@@ -1228,10 +1232,10 @@
           isUserSubmitted: true
         }));
 
-      // 2. ONLY campaigns approved by Admin appear in the Community Request List!
+      // 2. Crowdfunding campaigns (visible directly without admin approval!)
       const savedCampaigns = storage.get('cdk-campaigns', []);
-      const approvedCampaigns = savedCampaigns
-        .filter(c => c.status === 'approved' || c.status === 'verified')
+      const userCampaigns = savedCampaigns
+        .filter(c => c.status !== 'rejected' && c.status !== 'hold')
         .map(c => ({
           id: c.id,
           name: c.organizer,
@@ -1244,7 +1248,7 @@
           isApprovedCampaign: true
         }));
 
-      peopleRequests = [...approvedCampaigns, ...userOffers, ...defaultPeopleRequests];
+      peopleRequests = [...userCampaigns, ...userOffers, ...defaultPeopleRequests];
     }
     initRequestsData();
 
@@ -1279,9 +1283,9 @@
 
         let cloudApprovedCampaigns = [];
         if (dbCampaigns && dbCampaigns.length) {
-          // ONLY campaigns with status 'approved' or 'verified' from Supabase!
+          // Show all active campaigns from Supabase without requiring admin approval
           cloudApprovedCampaigns = dbCampaigns
-            .filter(c => c.status === 'approved' || c.status === 'verified')
+            .filter(c => c.status !== 'rejected' && c.status !== 'hold')
             .map(c => ({
               id: c.id,
               name: c.organizer,
@@ -1702,10 +1706,32 @@
         animal_type: $('#animal-type')?.value || '',
         animal_purpose: $('#animal-purpose')?.value || '',
         animal_organization: $('#animal-org')?.value || '',
-        status: 'pending',
+        status: 'approved',
         created_at: new Date().toISOString()
       };
 
+      // 1. Immediately create the live community entry
+      const newEntry = {
+        name: payload.organizer,
+        place: payload.place,
+        category: payload.category,
+        phone: payload.phone,
+        desc: `${payload.title}${payload.goal ? ' · Target Goal: ₹' + Number(payload.goal).toLocaleString('en-IN') : ''}`,
+        type: 'campaign',
+        goal: payload.goal,
+        isApprovedCampaign: true,
+        isNew: true
+      };
+
+      // 2. Prepend to peopleRequests so it shows at the very top of the table!
+      peopleRequests.unshift(newEntry);
+
+      // 3. Save to local backup
+      const localCampaigns = storage.get('cdk-campaigns', []);
+      localCampaigns.unshift(payload);
+      storage.set('cdk-campaigns', localCampaigns);
+
+      // 4. Save to Supabase if connected
       let savedToSupabase = false;
       if (supabaseClient) {
         try {
@@ -1717,29 +1743,49 @@
         }
       }
 
-      // Save to local backup
-      const localCampaigns = storage.get('cdk-campaigns', []);
-      localCampaigns.unshift(payload);
-      storage.set('cdk-campaigns', localCampaigns);
+      // 5. Update UI immediately!
+      renderRequests();
+      renderCategoryCards();
+
+      // 6. Add pin to map if coords available
+      if (map && window.L) {
+        const coords = mapCoordinates[payload.place] || [19.14 + (Math.random() * 0.05), 72.96 + (Math.random() * 0.05)];
+        const markerIcon = L.divIcon({
+          className: '',
+          html: '<div class="map-pin" style="background: #8E2F2F">♥</div>',
+          iconSize: [38, 38],
+          iconAnchor: [19, 38]
+        });
+        const popupDiv = document.createElement('div');
+        popupDiv.className = 'text-xs p-1';
+        popupDiv.innerHTML = `
+          <strong class="text-sm block mb-1 text-[#283426]">${payload.organizer}</strong>
+          <span class="badge mb-2 inline-block">♥ Campaign · ${payload.category}</span>
+          <p class="muted mb-2">📍 ${payload.place}</p>
+          <a href="https://wa.me/91${payload.phone}" target="_blank" class="chip text-xs py-1 px-3 w-full justify-center text-[#2e7d32] font-bold">
+            Chat on WhatsApp ↗
+          </a>
+        `;
+        L.marker(coords, { title: payload.organizer, icon: markerIcon }).bindPopup(popupDiv).addTo(map);
+      }
 
       btn.disabled = false;
       btn.textContent = 'Save & Submit Campaign ↗';
       $('#campaign-form').reset();
       updateDocChecklist();
 
-      // Show friendly awaiting admin approval notice
-      statusText.innerHTML = `
-        <div class="p-4 bg-[#fef3c7] text-[#92400e] border border-[#fde68a] rounded-2xl font-medium text-xs mt-3 text-left shadow-sm">
-          <div class="flex items-center gap-2 text-sm font-bold mb-1 text-[#78350f]">
-            <span>⏳</span> <span>Campaign Registered Successfully!</span>
-          </div>
-          <p>Dhanyawad <strong>${payload.organizer}</strong>! Aapka campaign request register ho chuka hai.</p>
-          <p class="mt-1.5 text-[11.5px] text-[#92400e] leading-relaxed">
-            🛡️ <strong>Admin Approval Workflow:</strong> Genuine causes aur security ke liye, <strong>Admin dwara review aur accept/approve hone ke baad</strong> yeh upar <strong>Community Request List</strong> mein live publish hoga.
-          </p>
-        </div>
-      `;
-      toast('⏳ Campaign submitted! Awaiting Admin review & acceptance.');
+      // Instant live success confirmation
+      if (savedToSupabase) {
+        statusText.innerHTML = '<span class="text-green-700 font-bold">✓ Dhanyawad ' + payload.organizer + '! Aapka crowdfunding campaign live ho gaya hai aur upar Community Request List me add ho chuka hai!</span>';
+      } else {
+        statusText.innerHTML = '<span class="text-green-700 font-bold">✓ Dhanyawad ' + payload.organizer + '! Aapka crowdfunding campaign upar Community Request List me add ho chuka hai!</span>';
+      }
+      toast('✓ Aapka campaign upar Community Request List me live add ho gaya hai!');
+
+      // Smoothly scroll up to the Community Request List so the user sees their campaign right away!
+      setTimeout(() => {
+        $('#giving-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 600);
     }
 
     // ==============================================================================
@@ -2114,13 +2160,13 @@
             <td>
               <div class="flex flex-col gap-1.5 items-start">
                 ${
-                  (currentStatus === 'pending' || !currentStatus)
-                    ? `<button type="button" onclick="approveCampaign(${idx})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs shadow-sm transition" title="Accept and publish to Community Request List">
-                        <span>✅ Accept & Publish</span>
+                  (currentStatus === 'hold' || currentStatus === 'rejected')
+                    ? `<button type="button" onclick="approveCampaign(${idx})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs shadow-sm transition" title="Restore and publish to Community Request List">
+                        <span>✅ Make Live</span>
                        </button>
-                       <span class="crm-badge crm-badge-new text-[10.5px]">🟡 Awaiting Approval</span>`
+                       <span class="crm-badge crm-badge-new text-[10.5px]">⏸️ On Hold / Hidden</span>`
                     : `<div class="flex items-center gap-2 flex-wrap">
-                        <span class="crm-badge crm-badge-completed text-[10.5px]">🟢 Approved & Live</span>
+                        <span class="crm-badge crm-badge-completed text-[10.5px]">🟢 Live on List</span>
                         <button type="button" onclick="revokeCampaign(${idx})" class="text-[11px] text-gray-500 hover:text-amber-800 underline font-medium" title="Put on hold / unpublish">
                           Put on Hold
                         </button>
@@ -2129,10 +2175,11 @@
                 <div class="flex items-center gap-1.5 mt-1">
                   <span class="text-[10px] text-muted">Status:</span>
                   <select class="crm-status-select text-[11px] py-0.5 px-1.5" onchange="updateLeadStatus(${idx}, this.value, 'campaign')">
-                    <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>🟡 Pending</option>
-                    <option value="approved" ${currentStatus === 'approved' || currentStatus === 'verified' ? 'selected' : ''}>🟢 Approved</option>
+                    <option value="approved" ${currentStatus === 'approved' || currentStatus === 'active' || currentStatus === 'verified' ? 'selected' : ''}>🟢 Live / Approved</option>
                     <option value="contacted" ${currentStatus === 'contacted' ? 'selected' : ''}>🔵 Contacted</option>
+                    <option value="hold" ${currentStatus === 'hold' ? 'selected' : ''}>⏸️ On Hold</option>
                     <option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>✓ Completed</option>
+                    <option value="rejected" ${currentStatus === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
                   </select>
                 </div>
               </div>
@@ -2174,22 +2221,22 @@
       syncMapMarkers();
       loadAdminData();
 
-      toast(`✅ "${campaign.organizer}" ka campaign accept ho gaya! Ab Community Request List me live hai.`);
+      toast(`✅ "${campaign.organizer}" ka campaign live ho gaya! Ab Community Request List me dikh raha hai.`);
     }
 
     async function revokeCampaign(index) {
       const campaign = cachedCampaigns[index];
       if (!campaign) return;
 
-      campaign.status = 'pending';
+      campaign.status = 'hold';
       storage.set('cdk-campaigns', cachedCampaigns);
 
       if (supabaseClient) {
         try {
           if (campaign.id) {
-            await supabaseClient.from('campaigns').update({ status: 'pending' }).eq('id', campaign.id);
+            await supabaseClient.from('campaigns').update({ status: 'hold' }).eq('id', campaign.id);
           } else {
-            await supabaseClient.from('campaigns').update({ status: 'pending' }).eq('title', campaign.title);
+            await supabaseClient.from('campaigns').update({ status: 'hold' }).eq('title', campaign.title);
           }
         } catch (e) {
           console.warn('Supabase campaign revoke error:', e);
