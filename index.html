@@ -1,0 +1,2362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4F7343">
+  <meta name="description" content="Give useful items and support community causes near Mumbai, Thane and across India with chalo Daan Kare.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234F7343'/%3E%3Ctext x='16' y='24' text-anchor='middle' font-size='25' fill='%23F9D5BF'%3E%E2%99%A5%3C/text%3E%3C/svg%3E">
+  <title>chalo Daan Kare · A little giving. A closer community.</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Google Fonts: Outfit (Modern Punchy Headings) & Plus Jakarta Sans (Crisp Modern UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --green: #4F7343;
+      --green-dark: #3b5a32;
+      --green-light: #f0f3e9;
+      --peach: #F9D5BF;
+      --peach-light: #fbede3;
+      --maroon: #8E2F2F;
+      --maroon-dark: #6e2222;
+      --ink: #283426;
+      --cream: #fffbf5;
+      --border: #e4e6da;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow-wrap: break-word;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.01em;
+    }
+
+    h1, h2, h3, h4, .serif, .font-heading {
+      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif !important;
+      letter-spacing: -0.025em;
+      font-weight: 700;
+      color: #1e281b;
+    }
+    h1 {
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.06;
+    }
+    h2 {
+      font-size: clamp(2rem, 3.8vw, 2.75rem);
+      line-height: 1.16;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    h3 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    p {
+      line-height: 1.65;
+      font-weight: 400;
+    }
+    .muted {
+      color: #556350;
+    }
+    img { max-width: 100%; }
+
+    .wrap { max-width: 1200px; margin: auto; padding: 0 24px; }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--green);
+      color: white;
+      padding: 13px 24px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14.5px;
+      letter-spacing: -0.01em;
+      transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-decoration: none;
+      box-shadow: 0 4px 14px -2px rgba(79,115,67,0.3);
+    }
+    .btn:hover {
+      background: var(--green-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px -2px rgba(79,115,67,0.4);
+    }
+    .btn.secondary {
+      background: transparent;
+      color: var(--green);
+      border-color: #b6c2af;
+      box-shadow: none;
+    }
+    .btn.secondary:hover {
+      background: #f0f3e9;
+      color: var(--green-dark);
+      border-color: var(--green);
+    }
+    .btn.maroon {
+      background: var(--maroon);
+      color: white;
+      box-shadow: 0 4px 14px -2px rgba(142,47,47,0.3);
+    }
+    .btn.maroon:hover {
+      background: var(--maroon-dark);
+      box-shadow: 0 6px 20px -2px rgba(142,47,47,0.4);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--green);
+      background: rgba(79, 115, 67, 0.08);
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(79, 115, 67, 0.16);
+    }
+    .card {
+      background: white;
+      border: 1px solid rgba(228, 230, 218, 0.9);
+      border-radius: 22px;
+      padding: 26px;
+      box-shadow: 0 4px 20px -2px rgba(40,52,38,0.06);
+      transition: all .25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -8px rgba(40,52,38,0.12);
+      border-color: rgba(79,115,67,0.4);
+    }
+    .section { padding: 72px 0; }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #d4dad0;
+      border-radius: 14px;
+      background: #fff;
+      font: inherit;
+      font-size: 14.5px;
+      font-weight: 500;
+      color: #1e281b;
+      transition: all .2s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 4px rgba(79,115,67,0.14);
+      background: #fff;
+    }
+    input::placeholder, textarea::placeholder {
+      color: #9ba796;
+      font-weight: 400;
+    }
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #273424;
+      display: block;
+      margin-bottom: 7px;
+      letter-spacing: -0.01em;
+    }
+
+    #map { height: 420px; z-index: 0; border-radius: 20px; border: 1px solid var(--border); }
+    .map-pin {
+      border: 3px solid white;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      font-size: 16px;
+    }
+    .chip {
+      border: 1.5px solid #d6dccf;
+      border-radius: 99px;
+      padding: 9px 18px;
+      font-size: 13.5px;
+      background: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #384634;
+      transition: all .15s ease;
+    }
+    .chip:hover {
+      border-color: var(--green);
+      background: #f8faf5;
+      color: var(--green);
+      transform: translateY(-1px);
+    }
+    .chip[aria-pressed=true] {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+      box-shadow: 0 4px 10px rgba(79,115,67,0.25);
+    }
+
+    .progress { height: 8px; background: #e8ebdf; border-radius: 10px; overflow: hidden; }
+    .progress span { display: block; height: 100%; background: var(--green); border-radius: 10px; transition: width .5s ease; }
+    .badge { font-size: 12px; background: #eef3e8; color: #36572d; padding: 5px 12px; border-radius: 99px; font-weight: 700; letter-spacing: -0.01em; }
+    
+    table { border-collapse: collapse; width: 100%; text-align: left; }
+    th, td { padding: 16px 20px; border-bottom: 1px solid #e8eadf; font-size: 14px; }
+    th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: #5a6652; background: #f3f5eb; font-weight: 800; }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      max-width: 90vw;
+      background: #283426;
+      color: white;
+      border-radius: 14px;
+      padding: 13px 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    dialog {
+      border: 0;
+      border-radius: 24px;
+      padding: 30px;
+      max-width: 540px;
+      width: 92%;
+      color: var(--ink);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    dialog::backdrop { background: rgba(23, 37, 17, 0.6); backdrop-filter: blur(4px); }
+
+    .tab-btn {
+      padding: 11px 22px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      letter-spacing: -0.01em;
+    }
+    .tab-btn.active {
+      background: var(--green);
+      color: white;
+      box-shadow: 0 4px 14px rgba(79,115,67,0.3);
+    }
+    .tab-btn:not(.active) {
+      background: white;
+      color: #4a5746;
+      border: 1.5px solid #d4dad0;
+    }
+    .tab-btn:not(.active):hover {
+      background: #f4f6f0;
+      color: var(--green);
+      border-color: #b6c2af;
+    }
+
+    /* CRM Dashboard Box Styling */
+    .crm-dialog {
+      background: #fafaf7;
+    }
+    .crm-table th {
+      background: #eff3ea;
+      color: #3b4d36;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 12px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .crm-table td {
+      padding: 12px 14px;
+      vertical-align: middle;
+      border-bottom: 1px solid #e9ece3;
+    }
+    .crm-table tr:hover {
+      background: #f7faf4;
+    }
+    .crm-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .crm-badge-new { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .crm-badge-contacted { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .crm-badge-scheduled { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+    .crm-badge-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .crm-status-select {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #d4dad0;
+      background: white;
+      cursor: pointer;
+    }
+
+    @media (max-width: 640px) {
+      .section { padding: 48px 0; }
+      .wrap { padding: 0 16px; }
+      #map { height: 330px; }
+      .desktop-nav { display: none; }
+      #giving-results table, #giving-results tbody, #giving-results tr, #giving-results td { display: block; width: 100%; }
+      #giving-results thead { display: none; }
+      #giving-results tr { padding: 14px 16px; border-bottom: 1px solid #e4e6da; background: white; border-radius: 12px; margin-bottom: 10px; }
+      #giving-results td { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 6px 0; border: 0; font-size: 13px; }
+      #giving-results td:before { content: attr(data-label); font-size: 11px; font-weight: 700; color: #64705e; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="sr-only focus:not-sr-only">Skip to content</a>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-[#e4e6da] bg-[#fffbf5]/95 backdrop-blur">
+    <div class="wrap flex items-center justify-between gap-4 py-3.5">
+      <a href="#" aria-label="chalo Daan Kare home" class="flex items-center gap-3">
+        <img src="assets/logo.png" alt="chalo Daan Kare logo" class="w-11 h-11 rounded-full object-cover shadow-sm border border-[#e4e6da]" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 32 32\'%3E%3Crect width=\'32\' height=\'32\' rx=\'8\' fill=\'%234F7343\'/%3E%3Ctext x=\'16\' y=\'24\' text-anchor=\'middle\' font-size=\'22\' fill=\'%23F9D5BF\'%3E%E2%99%A5%3C/text%3E%3C/svg%3E'">
+        <span class="serif text-xl font-bold tracking-tight">chalo <span class="text-[#8E2F2F]">दान</span> kare</span>
+      </a>
+
+      <nav class="desktop-nav hidden lg:flex items-center gap-6 text-sm font-semibold whitespace-nowrap" aria-label="Main navigation">
+        <a href="#about" class="hover:text-[#4F7343] transition">Our Purpose</a>
+        <a href="#donation" class="hover:text-[#4F7343] transition">kya दान kare</a>
+        <a href="#nearby" class="hover:text-[#4F7343] transition">kaha दान kare (Map)</a>
+        <a href="#submit-section" onclick="switchSubmissionTab('campaign')" class="hover:text-[#4F7343] transition">Crowdfunding</a>
+        <a href="#submit-section" class="hover:text-[#4F7343] transition">Submit a Need</a>
+      </nav>
+
+      <div class="flex items-center gap-2.5 flex-shrink-0">
+        <a class="btn text-sm py-2 px-5 whitespace-nowrap" href="#submit-section">Donate / Campaign <span aria-hidden="true">↗</span></a>
+        <button type="button" class="lg:hidden p-2 rounded-xl border border-[#cbd1c2] text-[#4F7343] text-lg leading-none" aria-label="Toggle menu" id="menu-toggle">☰</button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Menu -->
+    <nav id="mobile-menu" class="hidden px-5 py-3 border-t border-[#e4e6da] bg-[#fffbf5] space-y-2 text-sm">
+      <a href="#about" class="block py-2">Our Purpose</a>
+      <a href="#donation" class="block py-2">kya दान kare (Categories)</a>
+      <a href="#nearby" class="block py-2">kaha दान kare (Nearby Map)</a>
+      <a href="#submit-section" onclick="switchSubmissionTab('campaign'); $('#mobile-menu').classList.add('hidden');" class="block py-2">Crowdfunding</a>
+      <button type="button" onclick="openAdminModal(); $('#mobile-menu').classList.add('hidden');" class="block w-full text-left py-2 text-xs text-muted border-t pt-2 font-medium hover:text-[#4F7343] transition">🔐 Admin & CRM Portal</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero Section -->
+    <section class="wrap grid lg:grid-cols-2 gap-12 items-center py-12 lg:py-16">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f0f3e9] text-[#4F7343] text-xs font-semibold mb-5">
+          <span>♥</span> Small acts. Meaningful change.
+        </div>
+        <h1 class="serif text-5xl md:text-6xl lg:text-7xl leading-[1.08] tracking-tight text-[#283426]">
+          chalo <span class="text-[#8E2F2F]">दान</span> kare
+        </h1>
+        <p class="serif text-2xl md:text-3xl leading-snug mt-5 max-w-xl text-[#344431]">
+          What is extra for you, can be essential for someone else <em class="text-[#4F7343] not-italic underline decoration-[#F9D5BF] decoration-wavy">nearby.</em>
+        </p>
+        <p class="muted mt-5 max-w-lg text-[15px]">
+          A book, a warm blanket, a helping hand or animal feed. Connect with people in Mumbai & Thane to turn what you can give into someone’s next beginning.
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap gap-3.5 mt-8">
+          <a class="btn" href="#donation">Donate Items <span aria-hidden="true">↗</span></a>
+          <a class="btn secondary" href="#submit-section">Offer Item / Start Campaign</a>
+        </div>
+
+        <!-- Live Impact Stats -->
+        <div class="grid grid-cols-3 gap-4 mt-10 pt-8 border-t border-[#e4e6da]">
+          <div>
+            <div class="text-2xl md:text-3xl font-bold text-[#4F7343] serif">1,450+</div>
+            <div class="text-xs muted mt-0.5 font-medium">Items Shared</div>
+          </div>
+          <div>
+            <div class="text-2xl md:text-3xl font-bold text-[#8E2F2F] serif">₹18.5L+</div>
+            <div class="text-xs muted mt-0.5 font-medium">Causes Funded</div>
+          </div>
+          <div>
+            <div class="text-2xl md:text-3xl font-bold text-[#283426] serif">45+</div>
+            <div class="text-xs muted mt-0.5 font-medium">Local Communities</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Artwork -->
+      <div class="relative max-w-md mx-auto w-full">
+        <div class="rounded-[32px] overflow-hidden shadow-xl border-4 border-white bg-[#4F7343]">
+          <img src="assets/hero.png" alt="Illustration of kindness: sharing essentials on chalo Daan Kare" class="w-full h-auto object-cover" onerror="this.src='assets/image_0.png'">
+        </div>
+        <div class="absolute -bottom-5 left-4 right-4 rounded-2xl bg-[#F9D5BF] p-4 flex items-center gap-3.5 shadow-md border border-white/50">
+          <span class="text-2xl" aria-hidden="true">♡</span>
+          <div>
+            <strong class="text-sm text-[#283426] block">Good things deserve a second story.</strong>
+            <p class="text-xs text-[#52634e] mt-0.5">Let yours begin with a little kindness today.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Purpose / Vision & Mission -->
+    <section id="about" class="section bg-[#fafaf5] border-y border-[#e4e6da]">
+      <div class="wrap grid md:grid-cols-3 gap-8 items-start">
+        <div>
+          <div class="eyebrow mb-3">Our Purpose</div>
+          <h2>More care.<br>Less waste.</h2>
+          <p class="muted mt-4 text-sm">
+            Bridging generous hearts with real, localized needs. Dignity, transparency and neighbourly solidarity.
+          </p>
+        </div>
+        <article class="card bg-[#fbede3] border-[#ecd3c2] card-hover">
+          <span class="text-2xl text-[#8E2F2F]">☀</span>
+          <h3 class="text-xl font-bold mt-4 mb-2 serif">Our Vision</h3>
+          <p class="text-sm muted">
+            A compassionate India where everyone can contribute, neighbours help neighbours, and everyday giving becomes a joyful way of life.
+          </p>
+        </article>
+        <article class="card bg-[#f0f3e9] border-[#d2dcc8] card-hover">
+          <span class="text-2xl text-[#4F7343]">↗</span>
+          <h3 class="text-xl font-bold mt-4 mb-2 serif">Our Mission</h3>
+          <p class="text-sm muted">
+            To create a transparent, trustworthy and community-led platform where usable items find a grateful home and genuine causes find support.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Start Either Way: kya daan kare / kaha daan kare -->
+    <section id="giving-start" class="wrap py-12">
+      <div class="text-center max-w-2xl mx-auto mb-8">
+        <p class="eyebrow mb-2">Start Either Way</p>
+        <h2 class="serif text-3xl md:text-4xl text-[#283426]">Aap kahan se shuru karna chahenge?</h2>
+        <p class="muted text-sm mt-2">Filter by item categories or explore by your local area on the map.</p>
+      </div>
+      <div class="flex justify-center gap-3">
+        <button type="button" class="tab-btn active text-base px-6 py-3" id="tab-what" onclick="switchGivingTab('what')">
+          📦 kya <span class="text-[#8E2F2F]">दान</span> kare (Items)
+        </button>
+        <button type="button" class="tab-btn text-base px-6 py-3" id="tab-where" onclick="switchGivingTab('where')">
+          📍 kaha <span class="text-[#8E2F2F]">दान</span> kare (Map)
+        </button>
+      </div>
+    </section>
+
+    <!-- SECTION 1: kya daan kare (Categories) -->
+    <section id="donation" class="section pt-4">
+      <div class="wrap">
+        <div class="flex flex-wrap justify-between items-end gap-5 mb-8">
+          <div>
+            <p class="eyebrow mb-2">Item Categories</p>
+            <h2 class="serif">Someone needs what you no longer use.</h2>
+            <p class="muted text-sm mt-2">Click any category below to filter live community requests and donors.</p>
+          </div>
+          <button type="button" class="chip" id="btn-reset-category" onclick="selectCategory('')">
+            Show all categories
+          </button>
+        </div>
+        <!-- Category Cards Grid -->
+        <div id="donation-cards" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: kaha daan kare (Interactive Map) -->
+    <section id="nearby" class="section bg-[#f0f3e9] border-y border-[#e4e6da]">
+      <div class="wrap">
+        <div class="flex flex-wrap items-end justify-between gap-6 mb-7">
+          <div>
+            <p class="eyebrow mb-2">Location Map</p>
+            <h2 class="serif">Find a connection nearby.</h2>
+            <p class="muted mt-2 text-sm">Explore verified requests and active community drives in Mumbai, Thane and Navi Mumbai.</p>
+          </div>
+          <div class="flex flex-wrap gap-2" role="group" aria-label="Map filter">
+            <button class="chip" data-filter="all" aria-pressed="true" onclick="filterMapType('all')">All Locations</button>
+            <button class="chip" data-filter="donation" aria-pressed="false" onclick="filterMapType('donation')">🎁 Goods Donation</button>
+            <button class="chip" data-filter="fund" aria-pressed="false" onclick="filterMapType('fund')">♥ Crowdfunding</button>
+            <button class="chip text-[#4F7343] font-semibold" id="btn-detect-gps" onclick="detectUserLocation()">📍 Detect My Area</button>
+          </div>
+        </div>
+
+        <!-- Location Search Input -->
+        <div class="card p-4 mb-5 flex flex-wrap gap-3 items-center">
+          <label for="location-search" class="sr-only">Search by city or area</label>
+          <input id="location-search" type="search" placeholder="Search area (e.g. Thane, Dadar, Kalyan, Mulund, Borivali...)" class="flex-1" list="location-options">
+          <datalist id="location-options"></datalist>
+          <button type="button" class="btn py-2 px-5 text-sm" onclick="filterMap()">Filter Map →</button>
+          <button type="button" class="btn secondary py-2 px-4 text-sm" onclick="clearLocationFilter()">Clear</button>
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div id="map" aria-label="Interactive map of community requests in Mumbai and Thane">
+          <p class="p-6 text-center text-sm muted">Loading interactive map…</p>
+        </div>
+
+        <div class="flex flex-wrap justify-between gap-3 text-xs muted mt-3.5">
+          <span>🎁 Green pin = Goods donation request &nbsp; | &nbsp; ♥ Maroon pin = Crowdfunding drive</span>
+          <span id="map-status-text">Sample locations shown in Mumbai & Thane region</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Community Request List Table -->
+    <section id="giving-results" class="section">
+      <div class="wrap">
+        <div class="flex flex-wrap justify-between items-end gap-4 mb-6">
+          <div>
+            <div class="eyebrow mb-2">Live Connections</div>
+            <h3 class="text-2xl md:text-3xl font-bold serif" id="request-heading">Community Request List</h3>
+            <p class="text-sm muted mt-1" id="request-summary">Showing verified requests near Mumbai & Thane</p>
+          </div>
+          <div class="w-full sm:w-72">
+            <label class="sr-only" for="request-search">Search requests</label>
+            <input id="request-search" type="search" placeholder="Search person, area, item..." oninput="renderRequests()">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-[#e4e6da] bg-white shadow-sm">
+          <table>
+            <thead>
+              <tr>
+                <th>Recipient / Group</th>
+                <th>Place</th>
+                <th>Looking For</th>
+                <th>Action / Connect</th>
+              </tr>
+            </thead>
+            <tbody id="requests"></tbody>
+          </table>
+        </div>
+        <p id="no-requests" class="hidden p-6 text-center muted text-sm bg-white rounded-2xl border border-[#e4e6da] mt-3">
+          No matching requests found. Try clearing filters or searching another area.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Submissions Section (Offer Items OR Start Campaign) -->
+    <section id="submit-section" class="section">
+      <div class="wrap">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <div class="mb-3">
+            <span class="eyebrow">♥ Community Action</span>
+          </div>
+          <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#1e281b] tracking-tight">
+            Daan Karein ya Campaign Shuru Karein
+          </h2>
+          <p class="muted text-sm md:text-base mt-3 max-w-xl mx-auto">
+            Choose whether you want to donate physical items (clothes, books, food, animal feed) or raise funds for a verified cause.
+          </p>
+          
+          <!-- Dual Form Switcher Tabs -->
+          <div class="inline-flex gap-2 p-1.5 bg-[#eef2e7] rounded-full mt-7 border border-[#d8e0d3] shadow-inner">
+            <button type="button" class="tab-btn active" id="form-tab-donate" onclick="switchSubmissionTab('donate')">
+              📦 Offer Items to Donate
+            </button>
+            <button type="button" class="tab-btn" id="form-tab-campaign" onclick="switchSubmissionTab('campaign')">
+              ♥ Start a Crowdfunding Campaign
+            </button>
+          </div>
+        </div>
+
+        <!-- FORM A: Offer Items to Donate -->
+        <div id="panel-donate-form" class="max-w-2xl mx-auto card shadow-sm">
+          <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[#e4e6da]">
+            <span class="w-10 h-10 rounded-full bg-[#f0f3e9] flex items-center justify-center text-[#4F7343] font-bold">📦</span>
+            <div>
+              <h3 class="text-xl font-bold serif">Offer Items to Donate</h3>
+              <p class="text-xs muted">Share extra clothes, books, toys, or animal feed with nearby needy families or NGOs.</p>
+            </div>
+          </div>
+
+          <form id="item-donation-form" onsubmit="submitItemDonation(event)" class="space-y-4">
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label for="donor-name">Your Full Name *</label>
+                <input id="donor-name" required placeholder="e.g. Ramesh Shah">
+              </div>
+              <div>
+                <label for="donor-phone">Phone / WhatsApp No. *</label>
+                <input id="donor-phone" type="tel" required placeholder="e.g. 9876543210">
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label for="donor-place">Area / City *</label>
+                <input id="donor-place" required placeholder="e.g. Thane West, Dadar, Kalyan">
+              </div>
+              <div>
+                <label for="donor-category">Item Category *</label>
+                <select id="donor-category" required>
+                  <option value="Clothes, Footwear & Blanket">Clothes, Footwear & Blankets</option>
+                  <option value="Books & Stationery">Books & Stationery</option>
+                  <option value="Toys & Games">Toys & Games</option>
+                  <option value="Food & Ration">Food & Dry Ration</option>
+                  <option value="Cow, Dog And Bird Food Support">Cow, Dog & Bird Food Support</option>
+                  <option value="Medical Aids">Medical Aids (Wheelchair, Walker, etc.)</option>
+                  <option value="Furniture & Electronics">Furniture & Electronics</option>
+                  <option value="Household Items">Household Items</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="donor-description">Items & Quantity Details *</label>
+              <textarea id="donor-description" rows="3" required placeholder="E.g. 10 clean winter blankets, 15 school notebooks in good condition, or 20kg cattle fodder..."></textarea>
+            </div>
+
+            <div>
+              <label for="donor-pickup">Pickup / Delivery Option</label>
+              <select id="donor-pickup">
+                <option>Volunteer can pick up from my address</option>
+                <option>I can drop it at a local community center / Gaushala</option>
+                <option>Either is fine</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn w-full mt-2" id="btn-submit-donation">
+              Submit Donation Offer ↗
+            </button>
+            <p id="donation-form-status" class="text-xs text-center mt-2"></p>
+          </form>
+        </div>
+
+        <!-- FORM B: Start a Crowdfunding Campaign -->
+        <div id="panel-campaign-form" class="max-w-3xl mx-auto card shadow-sm hidden">
+          <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[#e4e6da]">
+            <span class="w-10 h-10 rounded-full bg-[#fbede3] flex items-center justify-center text-[#8E2F2F] font-bold">♥</span>
+            <div>
+              <h3 class="text-xl font-bold serif">Start a Crowdfunding Campaign</h3>
+              <p class="text-xs muted">Raise verified support for Medical emergencies, Education, NGOs, or Gaushala/Animal care.</p>
+            </div>
+          </div>
+
+          <form id="campaign-form" onsubmit="submitCampaignForm(event)">
+            <div class="grid sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label for="organizer">Organizer / Patient / Group Name *</label>
+                <input id="organizer" required placeholder="e.g. Meera Patil">
+              </div>
+              <div>
+                <label for="place">City / Place *</label>
+                <input id="place" required placeholder="e.g. Mulund, Mumbai">
+              </div>
+              <div class="sm:col-span-2">
+                <label for="title">Campaign Title *</label>
+                <input id="title" required placeholder="e.g. Help Meera walk again after rehabilitation">
+              </div>
+              <div>
+                <label for="category">Campaign Category *</label>
+                <select id="category" onchange="updateDocChecklist()">
+                  <option>Medical</option>
+                  <option>Education</option>
+                  <option>Animal Welfare</option>
+                  <option>NGO</option>
+                </select>
+              </div>
+              <div>
+                <label for="goal">Target Goal Amount (₹) *</label>
+                <input id="goal" type="number" min="1000" max="10000000" step="100" required placeholder="e.g. 50000">
+              </div>
+              <div>
+                <label for="campaign-phone">Contact Phone / WhatsApp *</label>
+                <input id="campaign-phone" type="tel" required placeholder="e.g. 9812345678">
+              </div>
+              <div class="sm:col-span-2">
+                <label for="story">Detailed Story & Need *</label>
+                <textarea id="story" rows="3" required placeholder="Explain why support is needed, who is benefiting, and where funds will be used..."></textarea>
+              </div>
+            </div>
+
+            <!-- Animal Care Specific Fields -->
+            <fieldset id="animal-details" class="p-4 bg-[#fbfbf8] rounded-xl border border-[#e4e6da] mb-4 hidden">
+              <legend class="font-semibold text-xs text-[#4F7343] uppercase tracking-wider px-2">🐾 Animal Welfare Details</legend>
+              <div class="grid sm:grid-cols-2 gap-3 mt-2">
+                <div>
+                  <label for="animal-type">Animals Supported</label>
+                  <select id="animal-type">
+                    <option>Cows & Gaushala</option>
+                    <option>Street dogs & puppies</option>
+                    <option>Birds & pigeons</option>
+                    <option>Mixed animal shelter</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="animal-purpose">Primary Need</label>
+                  <select id="animal-purpose">
+                    <option>Food & green fodder</option>
+                    <option>Veterinary & medication</option>
+                    <option>Winter shelter & bedding</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-2">
+                  <label for="animal-org">Gaushala / NGO Name (If applicable)</label>
+                  <input id="animal-org" placeholder="e.g. Shree Krishna Gaushala, Kalyan">
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Document Verification Info Box -->
+            <div class="p-4 bg-[#f0f3e9] rounded-xl border border-[#d2dcc8] mb-4 text-xs">
+              <div class="font-bold text-[#4F7343] mb-1">📋 Verification Documents Checklist:</div>
+              <div id="doc-checklist" class="muted">Hospital letter, Patient ID, Medical prescription.</div>
+            </div>
+
+            <label class="flex gap-2.5 items-start text-xs muted mb-4">
+              <input type="checkbox" required class="w-4 h-4 mt-0.5 rounded">
+              <span>I confirm this is a genuine cause and details provided are truthful.</span>
+            </label>
+
+            <button type="submit" class="btn w-full" id="btn-submit-campaign">
+              Save & Submit Campaign ↗
+            </button>
+            <p id="campaign-form-status" class="text-xs text-center mt-2"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#24381e] text-[#fff8f0] py-12 border-t border-[#3b5731]">
+    <div class="wrap">
+      <div class="flex flex-wrap justify-between gap-8 pb-8 border-b border-white/10">
+        <div class="max-w-sm">
+          <div class="serif text-3xl font-bold tracking-tight">chalo <span class="text-[#F9D5BF]">दान</span> kare</div>
+          <p class="text-sm text-[#d4ded1] mt-2.5 leading-relaxed">A community giving network for Mumbai & Thane. Connecting everyday generous hearts with real, localized needs.</p>
+          <div class="flex items-center gap-3 mt-4 text-xs text-[#a7bda1]">
+            <span>🌱 100% Volunteer Driven</span>
+            <span>·</span>
+            <span>🛡️ Verified Local Causes</span>
+          </div>
+        </div>
+        <nav class="flex flex-wrap gap-6 text-sm items-center font-medium" aria-label="Footer navigation">
+          <a href="#about" class="hover:text-[#F9D5BF] transition">Our Purpose</a>
+          <a href="#donation" class="hover:text-[#F9D5BF] transition">kya दान kare</a>
+          <a href="#nearby" class="hover:text-[#F9D5BF] transition">kaha दान kare</a>
+          <a href="#submit-section" onclick="switchSubmissionTab('campaign')" class="hover:text-[#F9D5BF] transition">Crowdfunding</a>
+          <a href="#submit-section" class="hover:text-[#F9D5BF] transition">Offer Item</a>
+        </nav>
+      </div>
+
+      <div class="mt-8 flex flex-wrap justify-between items-center gap-4 text-xs text-[#c1cec0]">
+        <div>
+          <span>© <span id="year"></span> chalo Daan Kare · Mumbai & Thane Community. All rights reserved.</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-white/40">|</span>
+          <button type="button" onclick="openAdminModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition border border-white/15" title="Authorized NGO / Client CRM login">
+            <span>🔐</span> Admin & CRM Portal
+          </button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL 1: Crowdfunding Support & Mock Payment Modal -->
+  <dialog id="support-dialog">
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <span class="badge mb-2 inline-block">Support Campaign</span>
+        <h3 class="text-2xl font-bold serif" id="support-modal-title">Help Meera Heal</h3>
+      </div>
+      <button type="button" onclick="$('#support-dialog').close()" class="text-xl muted hover:text-black">✕</button>
+    </div>
+
+    <p class="text-sm muted mb-4" id="support-modal-desc">
+      Your contribution directly reaches this verified medical cause.
+    </p>
+
+    <!-- Preset Amount Selector -->
+    <div class="mb-4">
+      <label class="text-xs font-semibold block mb-2">Select Donation Amount (₹)</label>
+      <div class="grid grid-cols-4 gap-2">
+        <button type="button" class="chip justify-center" onclick="setDonationAmt(250)">₹250</button>
+        <button type="button" class="chip justify-center" aria-pressed="true" onclick="setDonationAmt(500)">₹500</button>
+        <button type="button" class="chip justify-center" onclick="setDonationAmt(1000)">₹1,000</button>
+        <button type="button" class="chip justify-center" onclick="setDonationAmt(250)">₹2,500</button>
+      </div>
+      <input type="number" id="custom-donation-amt" value="500" class="mt-2 text-center font-bold text-lg" placeholder="Custom amount">
+    </div>
+
+    <!-- Mock UPI QR Scanner -->
+    <div class="p-4 bg-[#f0f3e9] rounded-2xl border border-[#d2dcc8] text-center mb-5">
+      <div class="text-xs font-bold text-[#4F7343] uppercase tracking-wider mb-2">Scan with GPay / PhonePe / Paytm</div>
+      <div class="inline-block p-2 bg-white rounded-xl shadow-sm border border-[#e4e6da]">
+        <!-- Simulated QR Code SVG -->
+        <svg width="130" height="130" viewBox="0 0 100 100" fill="#283426">
+          <rect x="10" y="10" width="25" height="25" fill="none" stroke="#283426" stroke-width="4"/>
+          <rect x="17" y="17" width="11" height="11"/>
+          <rect x="65" y="10" width="25" height="25" fill="none" stroke="#283426" stroke-width="4"/>
+          <rect x="72" y="17" width="11" height="11"/>
+          <rect x="10" y="65" width="25" height="25" fill="none" stroke="#283426" stroke-width="4"/>
+          <rect x="17" y="72" width="11" height="11"/>
+          <rect x="42" y="15" width="8" height="8"/>
+          <rect x="42" y="30" width="8" height="16"/>
+          <rect x="42" y="55" width="8" height="8"/>
+          <rect x="58" y="42" width="8" height="8"/>
+          <rect x="70" y="50" width="16" height="8"/>
+          <rect x="65" y="70" width="25" height="20"/>
+          <circle cx="50" cy="50" r="6" fill="#8E2F2F"/>
+        </svg>
+      </div>
+      <div class="text-[11px] muted mt-2">UPI ID: <strong>chalodaankare@upi</strong></div>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="button" class="btn w-full" onclick="confirmMockPayment()">
+        I Have Donated (Get Receipt) ✓
+      </button>
+      <button type="button" class="btn secondary" onclick="$('#support-dialog').close()">
+        Close
+      </button>
+    </div>
+  </dialog>
+
+  <!-- MODAL 2: CLIENT ADMIN & CRM OPERATIONS BOX -->
+  <dialog id="admin-dialog" class="crm-dialog" style="max-width: 1060px; width: 96%; padding: 0; border: 1px solid #d4dad0; border-radius: 24px; box-shadow: 0 25px 60px -15px rgba(0,0,0,0.35); overflow: hidden;">
+    
+    <!-- CRM Window Header Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 p-5 bg-[#fafaf7] border-b border-[#e4e6da]">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-[#4F7343] text-white flex items-center justify-center font-bold text-xl shadow-sm">
+          📊
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h3 class="text-xl font-bold font-heading text-[#1e281b]">Chalo Daan Kare · Central CRM & Ops Box</h3>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border" id="crm-db-pill">Checking DB...</span>
+          </div>
+          <p class="text-xs text-[#556350] mt-0.5">Manage incoming donor leads, coordinate volunteers, track campaign goals & secure export</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <span id="crm-user-badge" class="px-2.5 py-1 rounded-lg bg-white border border-[#ccd6c4] text-[11px] font-bold text-[#2d3a2a] hidden"></span>
+        <button type="button" id="crm-export-btn" class="btn text-xs py-2 px-4 shadow-none hidden" onclick="exportSubmissionsToCSV()">
+          📥 Export Leads (CSV)
+        </button>
+        <button type="button" id="crm-lock-btn" class="btn secondary text-xs py-2 px-3.5 hidden" onclick="lockAdminPortal()" title="Lock CRM session">
+          🔒 Logout
+        </button>
+        <button type="button" onclick="$('#admin-dialog').close()" class="w-9 h-9 rounded-full border border-[#cbd1c2] flex items-center justify-center text-base font-bold text-gray-500 hover:text-black hover:bg-gray-100 transition" title="Close">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- 1. CRM SECURITY GATE (Pure Supabase User Auth) -->
+    <div id="admin-login-view" class="p-6 md:p-10 text-center max-w-md mx-auto">
+      <div class="w-16 h-16 rounded-3xl bg-[#f0f3e9] text-[#4F7343] flex items-center justify-center text-3xl mx-auto mb-4 border border-[#d2dcc8] shadow-sm">
+        🛡️
+      </div>
+      <h4 class="font-bold text-xl text-[#1e281b] mb-1 font-heading">Client & Admin Access</h4>
+      <p class="text-xs text-[#556350] mb-5">
+        Sirf Supabase me registered authorized admin user hi lead operations aur donor contact details access kar sakta hai.
+      </p>
+
+      <!-- Supabase User Login (Email + Password) -->
+      <form id="supabase-login-form" onsubmit="loginWithSupabase(event)" class="bg-white p-6 rounded-2xl border border-[#e4e6da] shadow-sm text-left space-y-3.5">
+        <div>
+          <label for="admin-email-input" class="text-xs font-bold text-[#283426] mb-1 block">Supabase Admin Email</label>
+          <input type="email" id="admin-email-input" required placeholder="e.g. admin@chalodaankare.org" class="text-sm">
+        </div>
+        <div>
+          <label for="admin-password-input" class="text-xs font-bold text-[#283426] mb-1 block">Supabase Password</label>
+          <div class="relative">
+            <input type="password" id="admin-password-input" required placeholder="Enter your password" class="text-sm pr-10">
+            <button type="button" onclick="togglePasswordVisibility('admin-password-input')" class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 hover:text-black" title="Show/Hide Password">
+              👁️
+            </button>
+          </div>
+        </div>
+        <button type="submit" id="btn-supabase-login" class="btn w-full py-2.5 text-sm mt-1">
+          Login with Supabase User →
+        </button>
+        <p id="supabase-login-error" class="text-xs text-[#8E2F2F] mt-2 font-semibold text-center hidden"></p>
+      </form>
+
+      <div class="mt-4 p-3.5 bg-[#fdfaf5] rounded-xl border border-[#f0e6d6] text-[11px] text-[#786650] text-left">
+        💡 <strong>Supabase User Login:</strong> Apne Supabase dashboard (<a href="https://supabase.com/dashboard" target="_blank" class="underline text-[#4F7343] font-bold">Authentication ➔ Users</a>) me add kiye gaye authorized email aur password se login karein.
+      </div>
+    </div>
+
+    <!-- 2. CRM MAIN DASHBOARD VIEW (When unlocked) -->
+    <div id="admin-panel-view" class="hidden p-5 md:p-6 bg-[#fafaf7] space-y-5 max-h-[75vh] overflow-y-auto">
+      
+      <!-- Row 1: KPI Metrics Ribbon -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="p-4 bg-white rounded-2xl border border-[#e4e6da] shadow-xs">
+          <div class="flex items-center justify-between text-xs text-[#556350] mb-1">
+            <span class="font-semibold">📦 Total Item Offers</span>
+            <span class="text-lg">🎁</span>
+          </div>
+          <div class="text-2xl font-extrabold text-[#4F7343] font-heading" id="metric-donations-count">0</div>
+          <div class="text-[11px] text-[#73836e] mt-0.5">Physical items offered</div>
+        </div>
+
+        <div class="p-4 bg-white rounded-2xl border border-[#e4e6da] shadow-xs">
+          <div class="flex items-center justify-between text-xs text-[#556350] mb-1">
+            <span class="font-semibold">♥ Crowdfunding Inquiries</span>
+            <span class="text-lg">🎯</span>
+          </div>
+          <div class="text-2xl font-extrabold text-[#8E2F2F] font-heading" id="metric-campaigns-count">0</div>
+          <div class="text-[11px] text-[#8e6565] mt-0.5" id="metric-campaign-funds">₹0 Total Goal</div>
+        </div>
+
+        <div class="p-4 bg-white rounded-2xl border border-[#e4e6da] shadow-xs">
+          <div class="flex items-center justify-between text-xs text-[#556350] mb-1">
+            <span class="font-semibold">🟡 Pending Action</span>
+            <span class="text-lg">⏳</span>
+          </div>
+          <div class="text-2xl font-extrabold text-[#b45309] font-heading" id="metric-pending-count">0</div>
+          <div class="text-[11px] text-[#92400e] mt-0.5">Awaiting volunteer contact</div>
+        </div>
+
+        <div class="p-4 bg-white rounded-2xl border border-[#e4e6da] shadow-xs">
+          <div class="flex items-center justify-between text-xs text-[#556350] mb-1">
+            <span class="font-semibold">🟢 Completed / Delivered</span>
+            <span class="text-lg">✓</span>
+          </div>
+          <div class="text-2xl font-extrabold text-[#15803d] font-heading" id="metric-completed-count">0</div>
+          <div class="text-[11px] text-[#166534] mt-0.5">Successfully fulfilled</div>
+        </div>
+      </div>
+
+      <!-- Row 2: CRM Controls & Pipeline Filters -->
+      <div class="card p-4 bg-white">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3 pb-3 border-b border-[#e4e6da]">
+          <!-- Pipeline Tabs -->
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="tab-btn active text-xs py-2 px-4" id="crm-tab-donations" onclick="switchCrmTab('donations')">
+              📦 Item Donation Leads (<span id="crm-count-d">0</span>)
+            </button>
+            <button type="button" class="tab-btn text-xs py-2 px-4" id="crm-tab-campaigns" onclick="switchCrmTab('campaigns')">
+              ♥ Crowdfunding Causes (<span id="crm-count-c">0</span>)
+            </button>
+          </div>
+
+          <!-- Cloud Sync & Refresh -->
+          <div class="flex items-center gap-2 text-xs">
+            <button type="button" class="chip text-xs py-1.5 px-3" onclick="refreshCrmData()" title="Fetch fresh records from Supabase">
+              🔄 Sync Cloud DB
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <div>
+            <input id="crm-search-input" type="search" placeholder="🔍 Search by name, phone, area, item..." oninput="filterCrmTable()" class="text-xs py-2">
+          </div>
+          <div>
+            <select id="crm-status-filter" onchange="filterCrmTable()" class="text-xs py-2">
+              <option value="">All Statuses (Pipeline)</option>
+              <option value="new">🟡 New Lead / Available</option>
+              <option value="contacted">🔵 Contacted / In Discussion</option>
+              <option value="scheduled">🚚 Pickup Scheduled</option>
+              <option value="completed">🟢 Completed / Picked Up</option>
+            </select>
+          </div>
+          <div>
+            <select id="crm-location-filter" onchange="filterCrmTable()" class="text-xs py-2">
+              <option value="">All Locations</option>
+              <option value="Thane">Thane</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Dadar">Dadar</option>
+              <option value="Kalyan">Kalyan</option>
+              <option value="Mulund">Mulund</option>
+              <option value="Dombivli">Dombivli</option>
+              <option value="Navi Mumbai">Navi Mumbai</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Interactive CRM Data Table -->
+      <div class="card p-0 overflow-hidden bg-white border border-[#e4e6da]">
+        <div class="overflow-x-auto max-h-96">
+          <table class="crm-table w-full text-xs">
+            <thead id="crm-table-head"></thead>
+            <tbody id="crm-table-body"></tbody>
+          </table>
+        </div>
+        <div id="crm-no-results" class="hidden p-8 text-center muted text-xs bg-white">
+          No records found matching your filters.
+        </div>
+      </div>
+
+      <!-- Row 4: Database & Security Info Box -->
+      <div class="p-3.5 bg-[#f5f7f0] rounded-xl border border-[#dce3d6] flex flex-wrap items-center justify-between gap-3 text-xs text-[#41533c]">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🛡️</span>
+          <span><strong>Secure Client CRM:</strong> Donor contact details and inquiries are protected with end-to-end cloud sync to Supabase.</span>
+        </div>
+        <div class="text-[11px] text-[#60735b]">
+          Supabase Project: <code class="bg-white px-2 py-0.5 rounded border border-[#ccd6c4] font-mono">sggvzjxpywaqvljkzmbo</code>
+        </div>
+      </div>
+
+    </div>
+  </dialog>
+
+  <!-- Toast Notification Bar -->
+  <div id="toast" role="status" hidden></div>
+
+  <!-- Main JavaScript Logic -->
+  <script>
+    'use strict';
+
+    // ==============================================================================
+    // 1. SUPABASE & APP CONFIGURATION
+    // ==============================================================================
+    // Aapke client ko [supabase.com] se URL aur Anon Key milne ke baad yahan paste karein:
+    const SUPABASE_CONFIG = {
+      url: 'https://sggvzjxpywaqvljkzmbo.supabase.co',
+      anonKey: 'sb_publishable_k8PMqq0uLEUHxFZnncmavw_Cet20LWj'
+    };
+
+    // Initialize Supabase Client with user credentials
+    let supabaseClient = null;
+    if (window.supabase && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        console.log('✓ Supabase Client initialized and connected to cloud database.');
+      } catch (err) {
+        console.warn('Supabase initialization warning:', err);
+      }
+    }
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+
+    // Local Storage Helper
+    const storage = {
+      get(k, fallback) {
+        try { return JSON.parse(localStorage.getItem(k)) ?? fallback; }
+        catch { return fallback; }
+      },
+      set(k, val) {
+        try { localStorage.setItem(k, JSON.stringify(val)); return true; }
+        catch { return false; }
+      }
+    };
+
+    function toast(text) {
+      const t = $('#toast');
+      t.textContent = text;
+      t.hidden = false;
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => { t.hidden = true; }, 4000);
+    }
+
+    // ==============================================================================
+    // 2. MOBILE MENU & HEADER
+    // ==============================================================================
+    const menuToggle = $('#menu-toggle');
+    const mobileMenu = $('#mobile-menu');
+    if (menuToggle && mobileMenu) {
+      menuToggle.onclick = () => {
+        const isHidden = mobileMenu.classList.contains('hidden');
+        mobileMenu.classList.toggle('hidden', !isHidden);
+      };
+      mobileMenu.querySelectorAll('a').forEach(a => {
+        a.onclick = () => mobileMenu.classList.add('hidden');
+      });
+    }
+
+    // ==============================================================================
+    // 3. ITEM DONATION CATEGORIES (kya daan kare)
+    // ==============================================================================
+    const donationCategories = [
+      {
+        id: 'clothes',
+        title: 'Clothes, Footwear & Blanket',
+        desc: 'Share comfort, warmth and everyday dignity.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 3-6 4 3 5 3-2v11h8V10l3 2 3-5-6-4a4 4 0 0 1-8 0Z"/></svg>'
+      },
+      {
+        id: 'books',
+        title: 'Books & Stationery',
+        desc: 'Give a curious mind a fresh page and school kits.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6C9 3 5 3 2 4v15c4-1 7-1 10 2 3-3 6-3 10-2V4c-3-1-7-1-10 2Z"/><path d="M12 6v15M5 8h4M5 12h4M15 8h4M15 12h4"/></svg>'
+      },
+      {
+        id: 'toys',
+        title: 'Toys & Games',
+        desc: 'Pass on play, discovery and childhood smiles.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="7.5" cy="7.5" r="1"/><circle cx="16.5" cy="7.5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="7.5" cy="16.5" r="1"/><circle cx="16.5" cy="16.5" r="1"/></svg>'
+      },
+      {
+        id: 'ration',
+        title: 'Food & Ration',
+        desc: 'Share unopened pantry staples and nutritional kits.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h18l-2 12H5L3 9ZM8 9l3-7m5 7-3-7M8 13v4m4-4v4m4-4v4M2 9h20"/></svg>'
+      },
+      {
+        id: 'animals',
+        title: 'Cow, Dog And Bird Food Support',
+        desc: 'Green fodder & feed for cows, stray dog feed, bird grains.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="5" cy="8" rx="2" ry="3"/><ellipse cx="10" cy="5" rx="2" ry="3"/><ellipse cx="16" cy="5" rx="2" ry="3"/><ellipse cx="21" cy="9" rx="2" ry="3"/><path d="M6 18c0-3 4-8 7-8s7 5 7 8-4 3-7 2-7 1-7-2Z"/></svg>'
+      },
+      {
+        id: 'medical',
+        title: 'Medical Aids',
+        desc: 'Share mobility gear, wheelchairs, walkers & care aids.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v16m-8-8h16"/><circle cx="12" cy="12" r="10"/></svg>'
+      },
+      {
+        id: 'furniture',
+        title: 'Furniture & Electronics',
+        desc: 'Help a useful desk, chair or appliance find a new home.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 13V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v5M5 11H3v8h18v-8h-2v4H5ZM5 19v3m14-3v3"/></svg>'
+      },
+      {
+        id: 'household',
+        title: 'Household Items',
+        desc: 'Clean utensils, storage and home essentials for families.',
+        icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10h16v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4ZM2 12h2m16 0h2M3 7h18M10 4h4M12 4v3"/></svg>'
+      }
+    ];
+
+    let selectedCategory = '';
+    let selectedPlace = '';
+
+    function renderCategoryCards() {
+      const container = $('#donation-cards');
+      if (!container) return;
+      container.replaceChildren();
+
+      donationCategories.forEach(cat => {
+        const count = peopleRequests.filter(r => r.category === cat.title).length;
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'card card-hover text-left transition ' + (selectedCategory === cat.title ? 'ring-2 ring-[#4F7343] bg-[#f0f3e9]' : '');
+        card.innerHTML = `
+          <div class="w-12 h-12 rounded-2xl bg-[#f0f3e9] text-[#4F7343] flex items-center justify-center mb-4">
+            ${cat.icon}
+          </div>
+          <h4 class="font-bold text-base serif text-[#283426] mb-1.5 leading-snug">${cat.title}</h4>
+          <p class="text-xs muted mb-3 line-clamp-2">${cat.desc}</p>
+          <div class="text-xs font-semibold text-[#4F7343] flex items-center justify-between mt-auto pt-2 border-t border-[#e4e6da]">
+            <span>${count} requests nearby</span>
+            <span>↗</span>
+          </div>
+        `;
+        card.onclick = () => selectCategory(cat.title);
+        container.append(card);
+      });
+    }
+
+    function selectCategory(category) {
+      selectedCategory = category;
+      $('#request-heading').textContent = category ? category + ' — Requests' : 'Community Request List';
+      renderCategoryCards();
+      renderRequests();
+      filterMap();
+      if (category) {
+        const target = $('#giving-results');
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // ==============================================================================
+    // 4. COMMUNITY REQUEST LIST (Table with WhatsApp Connect)
+    // ==============================================================================
+    const defaultPeopleRequests = [
+      { name: "Riya Patil", place: "Thane West", category: "Clothes, Footwear & Blanket", phone: "9820011223", type: "request" },
+      { name: "Amit Jadhav", place: "Dadar, Mumbai", category: "Clothes, Footwear & Blanket", phone: "9819922334", type: "request" },
+      { name: "Neha Sharma", place: "Kalyan", category: "Books & Stationery", phone: "9833044556", type: "request" },
+      { name: "Rohan More", place: "Mulund", category: "Books & Stationery", phone: "9867055667", type: "request" },
+      { name: "Pooja Desai", place: "Dombivli", category: "Toys & Games", phone: "9892066778", type: "request" },
+      { name: "Arjun Shah", place: "Navi Mumbai", category: "Toys & Games", phone: "9821077889", type: "request" },
+      { name: "Meena Joshi", place: "Bhandup", category: "Household Items", phone: "9833088990", type: "request" },
+      { name: "Sanjay Pawar", place: "Thane", category: "Household Items", phone: "9819099001", type: "request" },
+      { name: "Kavita More", place: "Kalyan", category: "Furniture & Electronics", phone: "9820100112", type: "request" },
+      { name: "Rahul Shinde", place: "Borivali", category: "Furniture & Electronics", phone: "9867111223", type: "request" },
+      { name: "Anita Patil", place: "Dadar, Mumbai", category: "Food & Ration", phone: "9892122334", type: "request" },
+      { name: "Vijay Kamble", place: "Dombivli", category: "Food & Ration", phone: "9821133445", type: "request" },
+      { name: "Sunita Naik", place: "Navi Mumbai", category: "Medical Aids", phone: "9833144556", type: "request" },
+      { name: "Prakash Jadhav", place: "Thane", category: "Medical Aids", phone: "9819155667", type: "request" },
+      { name: "Shree Krishna Gaushala", place: "Kalyan", category: "Cow, Dog And Bird Food Support", phone: "9820166778", type: "request" },
+      { name: "Thane Animal Rescue Care", place: "Thane", category: "Cow, Dog And Bird Food Support", phone: "9867177889", type: "request" }
+    ];
+
+    let peopleRequests = [];
+
+    function initRequestsData() {
+      // 1. User item donation offers
+      const savedOffers = storage.get('cdk-donation-offers', []);
+      const userOffers = savedOffers
+        .filter(d => d.status !== 'rejected')
+        .map(d => ({
+          id: d.id,
+          name: d.donor_name,
+          place: d.place,
+          category: d.category,
+          phone: d.phone,
+          desc: d.items_description || '',
+          type: 'offer',
+          isUserSubmitted: true
+        }));
+
+      // 2. ONLY campaigns approved by Admin appear in the Community Request List!
+      const savedCampaigns = storage.get('cdk-campaigns', []);
+      const approvedCampaigns = savedCampaigns
+        .filter(c => c.status === 'approved' || c.status === 'verified')
+        .map(c => ({
+          id: c.id,
+          name: c.organizer,
+          place: c.place,
+          category: c.category,
+          phone: c.phone,
+          desc: `${c.title}${c.goal ? ' · Target Goal: ₹' + Number(c.goal).toLocaleString('en-IN') : ''}`,
+          type: 'campaign',
+          goal: c.goal,
+          isApprovedCampaign: true
+        }));
+
+      peopleRequests = [...approvedCampaigns, ...userOffers, ...defaultPeopleRequests];
+    }
+    initRequestsData();
+
+    async function syncSupabaseToTable() {
+      if (!supabaseClient) return;
+      try {
+        const { data: dbOffers } = await supabaseClient
+          .from('donation_offers')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        const { data: dbCampaigns } = await supabaseClient
+          .from('campaigns')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        let cloudOffers = [];
+        if (dbOffers && dbOffers.length) {
+          cloudOffers = dbOffers
+            .filter(d => d.status !== 'rejected')
+            .map(d => ({
+              id: d.id,
+              name: d.donor_name,
+              place: d.place,
+              category: d.category,
+              phone: d.phone,
+              desc: d.items_description || '',
+              type: 'offer',
+              isUserSubmitted: true
+            }));
+        }
+
+        let cloudApprovedCampaigns = [];
+        if (dbCampaigns && dbCampaigns.length) {
+          // ONLY campaigns with status 'approved' or 'verified' from Supabase!
+          cloudApprovedCampaigns = dbCampaigns
+            .filter(c => c.status === 'approved' || c.status === 'verified')
+            .map(c => ({
+              id: c.id,
+              name: c.organizer,
+              place: c.place,
+              category: c.category,
+              phone: c.phone,
+              desc: `${c.title}${c.goal ? ' · Target Goal: ₹' + Number(c.goal).toLocaleString('en-IN') : ''}`,
+              type: 'campaign',
+              goal: c.goal,
+              isApprovedCampaign: true
+            }));
+        }
+
+        const existingPhones = new Set([...cloudOffers.map(o => o.phone), ...cloudApprovedCampaigns.map(c => c.phone)]);
+        const filteredDefaults = defaultPeopleRequests.filter(d => !existingPhones.has(d.phone));
+        peopleRequests = [...cloudApprovedCampaigns, ...cloudOffers, ...filteredDefaults];
+
+        renderRequests();
+        renderCategoryCards();
+      } catch (err) {
+        console.warn('Supabase sync notice:', err);
+      }
+    }
+
+    function renderRequests() {
+      const tbody = $('#requests');
+      if (!tbody) return;
+      const q = ($('#request-search')?.value || '').toLowerCase().trim();
+      tbody.replaceChildren();
+
+      const matches = peopleRequests.filter(r => {
+        const matchesCat = !selectedCategory || r.category === selectedCategory;
+        const matchesPlace = !selectedPlace || r.place.toLowerCase().includes(selectedPlace.toLowerCase());
+        const matchesText = !q || (r.name + ' ' + r.place + ' ' + r.category + ' ' + (r.desc || '')).toLowerCase().includes(q);
+        return matchesCat && matchesPlace && matchesText;
+      });
+
+      matches.forEach(r => {
+        const tr = document.createElement('tr');
+        if (r.isNew) {
+          tr.className = 'bg-[#f0f9eb] border-2 border-[#86efac] transition-all duration-1000';
+        }
+        
+        const isOffer = r.type === 'offer';
+        const isCampaign = r.type === 'campaign';
+
+        const waMsg = encodeURIComponent(
+          isCampaign
+            ? `Namaste ${r.name}! Maine Chalo Daan Kare platform par aapka verified crowdfunding cause "${r.desc}" dekha. Main isme support / donate karna chahta/chahti hoon.`
+            : isOffer
+            ? `Namaste ${r.name}! Maine Chalo Daan Kare platform par aapka "${r.category}" daan karne ka offer dekha. Main isme coordinate karna chahta/chahti hoon.`
+            : `Namaste ${r.name}! Maine Chalo Daan Kare platform par aapka "${r.category}" ka request dekha. Main isme madad karna chahta/chahti hoon.`
+        );
+        const waUrl = `https://wa.me/91${r.phone}?text=${waMsg}`;
+
+        tr.innerHTML = `
+          <td data-label="Recipient / Donor">
+            <div class="font-bold text-[#1e281b] flex items-center gap-1.5 flex-wrap">
+              <span>${r.name}</span>
+              ${
+                isCampaign
+                  ? '<span class="px-2 py-0.5 rounded-full bg-[#fef2f2] text-[#991b1b] text-[10.5px] font-extrabold border border-[#fecaca]">♥ Verified Campaign</span>'
+                  : isOffer
+                  ? '<span class="px-2 py-0.5 rounded-full bg-[#dcfce7] text-[#15803d] text-[10.5px] font-extrabold border border-[#bbf7d0]">🎁 Donor Offer</span>'
+                  : '<span class="px-2 py-0.5 rounded-full bg-[#f0f3e9] text-[#4F7343] text-[10.5px] font-bold">Needs Help</span>'
+              }
+            </div>
+            ${r.desc ? `<p class="text-xs muted mt-0.5 line-clamp-1 italic text-[#63725e]">"${r.desc}"</p>` : ''}
+          </td>
+          <td data-label="Place" class="text-sm font-medium text-[#445240]">📍 ${r.place}</td>
+          <td data-label="Looking For">
+            <span class="badge">${r.category}</span>
+          </td>
+          <td data-label="Action">
+            <div class="flex items-center gap-2 flex-wrap">
+              <a href="${waUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8f5e9] text-[#2e7d32] hover:bg-[#c8e6c9] hover:shadow-sm text-xs font-bold transition" title="Chat on WhatsApp">
+                <span>💬 WhatsApp</span>
+              </a>
+              <a href="tel:${r.phone}" class="inline-flex items-center px-2.5 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-xs text-gray-700 transition font-semibold" title="Call directly">
+                📞
+              </a>
+              ${
+                isCampaign
+                  ? `<button type="button" onclick="openSupportModal('${r.name.replace(/'/g, "\\'")}', ${r.goal || 50000})" class="inline-flex items-center px-3 py-1.5 rounded-full bg-[#8E2F2F] text-white hover:bg-[#6e2222] text-xs font-bold transition shadow-xs" title="Donate to this campaign">♥ Support</button>`
+                  : ''
+              }
+            </div>
+          </td>
+        `;
+        tbody.append(tr);
+      });
+
+      $('#no-requests')?.classList.toggle('hidden', matches.length > 0);
+      $('#request-summary').textContent = `${matches.length} verified connections available${selectedCategory ? ' in ' + selectedCategory : ''}${selectedPlace ? ' near ' + selectedPlace : ''}`;
+    }
+
+    // ==============================================================================
+    // 5. INTERACTIVE LEAFLET MAP
+    // ==============================================================================
+    let map = null;
+    let markers = [];
+    let mapType = 'all';
+
+    const mapCoordinates = {
+      'Thane': [19.2183, 72.9781],
+      'Thane West': [19.2050, 72.9650],
+      'Dadar, Mumbai': [19.0176, 72.8562],
+      'Kalyan': [19.2403, 73.1305],
+      'Mulund': [19.1726, 72.9565],
+      'Dombivli': [19.2183, 73.0865],
+      'Navi Mumbai': [19.0330, 73.0297],
+      'Bhandup': [19.1510, 72.9370],
+      'Borivali': [19.2307, 72.8567],
+      'Mumbai Central': [18.9690, 72.8190],
+      'Bandra': [19.0596, 72.8295]
+    };
+
+    const mapLocations = [
+      ...peopleRequests.map((r, i) => ({
+        name: r.name,
+        place: r.place,
+        category: r.category,
+        type: 'donation',
+        lat: (mapCoordinates[r.place] ? mapCoordinates[r.place][0] : 19.13) + (i * 0.0003),
+        lng: (mapCoordinates[r.place] ? mapCoordinates[r.place][1] : 72.99) + (i * 0.0002)
+      })),
+      { name: 'Help Meera Heal (Medical Recovery)', place: 'Mumbai Central', category: 'Medical', type: 'fund', lat: 18.969, lng: 72.819 },
+      { name: 'A New School Year (50 Student Kits)', place: 'Mulund', category: 'Education', type: 'fund', lat: 19.1726, lng: 72.9565 },
+      { name: 'Community Daily Bread Pantry', place: 'Bandra', category: 'Food Support', type: 'fund', lat: 19.0596, lng: 72.8295 },
+      { name: 'Karuna Stray Dog & Gau Seva Drive', place: 'Thane', category: 'Animal Welfare', type: 'fund', lat: 19.208, lng: 72.975 }
+    ];
+
+    function initMap() {
+      const mapEl = $('#map');
+      if (!mapEl || !window.L) return;
+
+      mapEl.replaceChildren();
+      map = L.map('map', { scrollWheelZoom: false }).setView([19.14, 72.96], 10);
+      
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Mumbai & Thane Community Map',
+        maxZoom: 18
+      }).addTo(map);
+
+      // Populate datalist for search
+      const datalist = $('#location-options');
+      if (datalist) {
+        datalist.replaceChildren();
+        Object.keys(mapCoordinates).forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          datalist.append(opt);
+        });
+      }
+
+      markers = mapLocations.map(loc => {
+        const isFund = loc.type === 'fund';
+        const iconHtml = `<div class="map-pin" style="background: ${isFund ? '#8E2F2F' : '#4F7343'}">${isFund ? '♥' : '🎁'}</div>`;
+        
+        const popupDiv = document.createElement('div');
+        popupDiv.className = 'text-xs p-1';
+        popupDiv.innerHTML = `
+          <strong class="text-sm block mb-1 text-[#283426]">${loc.name}</strong>
+          <span class="badge mb-2 inline-block">${loc.category}</span>
+          <p class="muted mb-2">📍 ${loc.place}</p>
+          <button type="button" class="chip text-xs py-1 px-3 w-full justify-center" onclick="filterByPlace('${loc.place}')">
+            Show nearby requests →
+          </button>
+        `;
+
+        const marker = L.marker([loc.lat, loc.lng], {
+          title: loc.name,
+          icon: L.divIcon({
+            className: '',
+            html: iconHtml,
+            iconSize: [38, 38],
+            iconAnchor: [19, 38]
+          })
+        }).bindPopup(popupDiv).addTo(map);
+
+        return { marker, ...loc };
+      });
+
+      filterMap();
+    }
+
+    function filterMap() {
+      if (!map) return;
+      const q = ($('#location-search')?.value || selectedPlace || '').toLowerCase().trim();
+
+      const filtered = markers.filter(m => {
+        const matchesType = (mapType === 'all' || m.type === mapType);
+        const matchesCat = !selectedCategory || m.category === selectedCategory;
+        const matchesLoc = !q || m.place.toLowerCase().includes(q) || (q === 'mumbai' && m.place.toLowerCase().includes('mumbai'));
+        return matchesType && matchesCat && matchesLoc;
+      });
+
+      markers.forEach(m => {
+        if (filtered.includes(m)) m.marker.addTo(map);
+        else map.removeLayer(m.marker);
+      });
+
+      if (filtered.length === 1) {
+        map.setView(filtered[0].marker.getLatLng(), 13);
+        filtered[0].marker.openPopup();
+      } else if (filtered.length > 1) {
+        const group = L.featureGroup(filtered.map(f => f.marker));
+        map.fitBounds(group.getBounds(), { padding: [35, 35], maxZoom: 12 });
+      }
+
+      $('#map-status-text').textContent = `${filtered.length} locations visible${q ? ' for "' + q + '"' : ' in Mumbai-Thane region'}.`;
+    }
+
+    function filterMapType(type) {
+      mapType = type;
+      $$('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === type)));
+      filterMap();
+    }
+
+    function filterByPlace(place) {
+      selectedPlace = place;
+      const input = $('#location-search');
+      if (input) input.value = place;
+      renderRequests();
+      filterMap();
+      $('#giving-results')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function clearLocationFilter() {
+      selectedPlace = '';
+      if ($('#location-search')) $('#location-search').value = '';
+      renderRequests();
+      filterMap();
+      if (map) map.setView([19.14, 72.96], 10);
+    }
+
+    function detectUserLocation() {
+      if (!navigator.geolocation) {
+        toast('Geolocation is not supported by your browser.');
+        return;
+      }
+      toast('Finding your current location...');
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+        if (map) {
+          map.setView([latitude, longitude], 12);
+          L.circle([latitude, longitude], { radius: 3000, color: '#4F7343', fillOpacity: 0.15 }).addTo(map);
+          toast('Showing requests within 3 km of your location!');
+        }
+      }, () => {
+        toast('Could not detect location. Please type your area in the search bar.');
+      });
+    }
+
+    function switchGivingTab(tab) {
+      $('#tab-what')?.classList.toggle('active', tab === 'what');
+      $('#tab-where')?.classList.toggle('active', tab === 'where');
+      if (tab === 'what') {
+        $('#donation')?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        $('#nearby')?.scrollIntoView({ behavior: 'smooth' });
+        if (map) setTimeout(() => map.invalidateSize(), 300);
+      }
+    }
+
+    // ==============================================================================
+    // 6. CROWDFUNDING & DONATION MODAL ENGINE
+    // ==============================================================================
+
+    function openSupportModal(title, goal) {
+      $('#support-modal-title').textContent = title;
+      $('#support-dialog').showModal();
+    }
+
+    function setDonationAmt(amt) {
+      $('#custom-donation-amt').value = amt;
+      $$('#support-dialog .chip').forEach(c => {
+        c.setAttribute('aria-pressed', String(c.textContent === '₹' + amt.toLocaleString('en-IN')));
+      });
+    }
+
+    function confirmMockPayment() {
+      const amt = $('#custom-donation-amt').value;
+      const title = $('#support-modal-title').textContent;
+      $('#support-dialog').close();
+      toast(`🙏 Dhanyawad! ₹${amt} donation recorded for "${title}". Kindness Certificate ready!`);
+    }
+
+    // ==============================================================================
+    // 7. DUAL SUBMISSION FORMS (Item Donation vs Crowdfunding)
+    // ==============================================================================
+    function switchSubmissionTab(tab) {
+      const isDonate = tab === 'donate';
+      $('#form-tab-donate').classList.toggle('active', isDonate);
+      $('#form-tab-campaign').classList.toggle('active', !isDonate);
+      $('#panel-donate-form').classList.toggle('hidden', !isDonate);
+      $('#panel-campaign-form').classList.toggle('hidden', isDonate);
+    }
+
+    function updateDocChecklist() {
+      const cat = $('#category').value;
+      const animalFieldset = $('#animal-details');
+      animalFieldset.classList.toggle('hidden', cat !== 'Animal Welfare');
+
+      const docsMap = {
+        'Medical': 'Hospital letterhead, Patient Aadhaar/ID, Doctor prescription, Cost estimate.',
+        'Education': 'College/School ID, Fee structure receipt, Bonafide certificate.',
+        'Animal Welfare': 'Gaushala/NGO authorization or rescuer ID, feeding/care budget plan.',
+        'NGO': 'Trust Deed / 80G / 12A Certificate, PAN card, Activity report.'
+      };
+      $('#doc-checklist').textContent = docsMap[cat] || 'Identity proof and verification document.';
+    }
+
+    // A. Submit Physical Item Donation
+    async function submitItemDonation(e) {
+      e.preventDefault();
+      const btn = $('#btn-submit-donation');
+      const statusText = $('#donation-form-status');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      const payload = {
+        donor_name: $('#donor-name').value.trim(),
+        phone: $('#donor-phone').value.trim(),
+        place: $('#donor-place').value.trim(),
+        category: $('#donor-category').value,
+        items_description: $('#donor-description').value.trim(),
+        pickup_type: $('#donor-pickup').value,
+        status: 'available',
+        created_at: new Date().toISOString()
+      };
+
+      // 1. Immediately create the live community entry
+      const newEntry = {
+        name: payload.donor_name,
+        place: payload.place,
+        category: payload.category,
+        phone: payload.phone,
+        desc: payload.items_description,
+        type: 'offer',
+        isNew: true
+      };
+
+      // 2. Prepend to peopleRequests so it shows at the very top of the table!
+      peopleRequests.unshift(newEntry);
+
+      // 3. Save to localStorage
+      const localDonations = storage.get('cdk-donation-offers', []);
+      localDonations.unshift(payload);
+      storage.set('cdk-donation-offers', localDonations);
+
+      // 4. Save to Supabase if connected
+      let savedToSupabase = false;
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient.from('donation_offers').insert([payload]);
+          if (!error) savedToSupabase = true;
+          else console.warn('Supabase insert note:', error.message);
+        } catch (err) {
+          console.warn('Supabase network error:', err);
+        }
+      }
+
+      // 5. Update UI immediately!
+      renderRequests();
+      renderCategoryCards();
+
+      // 6. Add pin to map if coords available
+      if (map && window.L) {
+        const coords = mapCoordinates[payload.place] || [19.14 + (Math.random() * 0.05), 72.96 + (Math.random() * 0.05)];
+        const markerIcon = L.divIcon({
+          className: '',
+          html: '<div class="map-pin" style="background: #4F7343">🎁</div>',
+          iconSize: [38, 38],
+          iconAnchor: [19, 38]
+        });
+        const popupDiv = document.createElement('div');
+        popupDiv.className = 'text-xs p-1';
+        popupDiv.innerHTML = `
+          <strong class="text-sm block mb-1 text-[#283426]">${payload.donor_name}</strong>
+          <span class="badge mb-2 inline-block">🎁 Donor Offer · ${payload.category}</span>
+          <p class="muted mb-2">📍 ${payload.place}</p>
+          <a href="https://wa.me/91${payload.phone}" target="_blank" class="chip text-xs py-1 px-3 w-full justify-center text-[#2e7d32] font-bold">
+            Chat on WhatsApp ↗
+          </a>
+        `;
+        L.marker(coords, { title: payload.donor_name, icon: markerIcon }).bindPopup(popupDiv).addTo(map);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Submit Donation Offer ↗';
+      $('#item-donation-form').reset();
+
+      if (savedToSupabase) {
+        statusText.innerHTML = '<span class="text-green-700 font-bold">✓ Dhanyawad ' + payload.donor_name + '! Aapka daan offer live ho gaya hai aur upar Community List me add ho chuka hai!</span>';
+      } else {
+        statusText.innerHTML = '<span class="text-green-700 font-bold">✓ Dhanyawad ' + payload.donor_name + '! Aapka daan offer upar Community Request List me add ho chuka hai!</span>';
+      }
+      toast('✓ Aapka naam upar Community Request List me add ho gaya hai!');
+
+      // Smoothly scroll up to the Community Request List so the user sees their name right away!
+      setTimeout(() => {
+        $('#giving-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 600);
+    }
+
+    // B. Submit Crowdfunding Campaign
+    async function submitCampaignForm(e) {
+      e.preventDefault();
+      const btn = $('#btn-submit-campaign');
+      const statusText = $('#campaign-form-status');
+      btn.disabled = true;
+      btn.textContent = 'Saving Campaign...';
+
+      const payload = {
+        organizer: $('#organizer').value.trim(),
+        place: $('#place').value.trim(),
+        title: $('#title').value.trim(),
+        category: $('#category').value,
+        goal: Number($('#goal').value),
+        phone: $('#campaign-phone').value.trim(),
+        story: $('#story').value.trim(),
+        animal_type: $('#animal-type')?.value || '',
+        animal_purpose: $('#animal-purpose')?.value || '',
+        animal_organization: $('#animal-org')?.value || '',
+        status: 'pending',
+        created_at: new Date().toISOString()
+      };
+
+      let savedToSupabase = false;
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient.from('campaigns').insert([payload]);
+          if (!error) savedToSupabase = true;
+          else console.warn('Supabase insert note:', error.message);
+        } catch (err) {
+          console.warn('Supabase network error:', err);
+        }
+      }
+
+      // Save to local backup
+      const localCampaigns = storage.get('cdk-campaigns', []);
+      localCampaigns.unshift(payload);
+      storage.set('cdk-campaigns', localCampaigns);
+
+      btn.disabled = false;
+      btn.textContent = 'Save & Submit Campaign ↗';
+      $('#campaign-form').reset();
+      updateDocChecklist();
+
+      // Show friendly awaiting admin approval notice
+      statusText.innerHTML = `
+        <div class="p-4 bg-[#fef3c7] text-[#92400e] border border-[#fde68a] rounded-2xl font-medium text-xs mt-3 text-left shadow-sm">
+          <div class="flex items-center gap-2 text-sm font-bold mb-1 text-[#78350f]">
+            <span>⏳</span> <span>Campaign Registered Successfully!</span>
+          </div>
+          <p>Dhanyawad <strong>${payload.organizer}</strong>! Aapka campaign request register ho chuka hai.</p>
+          <p class="mt-1.5 text-[11.5px] text-[#92400e] leading-relaxed">
+            🛡️ <strong>Admin Approval Workflow:</strong> Genuine causes aur security ke liye, <strong>Admin dwara review aur accept/approve hone ke baad</strong> yeh upar <strong>Community Request List</strong> mein live publish hoga.
+          </p>
+        </div>
+      `;
+      toast('⏳ Campaign submitted! Awaiting Admin review & acceptance.');
+    }
+
+    // ==============================================================================
+    // 8. CLIENT ADMIN & CRM OPERATIONS ENGINE
+    // ==============================================================================
+    let crmActiveTab = 'donations';
+    let cachedCampaigns = [];
+    let cachedDonations = [];
+
+    let currentAuthUser = null;
+
+    function togglePasswordVisibility(id) {
+      const input = document.getElementById(id);
+      if (!input) return;
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function openAdminModal() {
+      const dialog = $('#admin-dialog');
+      if (!dialog) return;
+
+      const isAuthenticated = sessionStorage.getItem('cdk_crm_auth') === 'true';
+      const userEmail = sessionStorage.getItem('cdk_crm_email') || 'Authorized Admin';
+
+      if (isAuthenticated) {
+        unlockCrmView(userEmail);
+      } else {
+        $('#admin-login-view')?.classList.remove('hidden');
+        $('#admin-panel-view')?.classList.add('hidden');
+        $('#crm-export-btn')?.classList.add('hidden');
+        $('#crm-lock-btn')?.classList.add('hidden');
+        $('#crm-user-badge')?.classList.add('hidden');
+        if ($('#admin-email-input')) $('#admin-email-input').value = '';
+        if ($('#admin-password-input')) $('#admin-password-input').value = '';
+        $('#supabase-login-error')?.classList.add('hidden');
+      }
+
+      dialog.showModal();
+      if (!isAuthenticated) {
+        setTimeout(() => $('#admin-email-input')?.focus(), 150);
+      }
+    }
+
+    async function loginWithSupabase(e) {
+      if (e) e.preventDefault();
+      const email = ($('#admin-email-input')?.value || '').trim();
+      const password = ($('#admin-password-input')?.value || '').trim();
+      const errorEl = $('#supabase-login-error');
+      const btn = $('#btn-supabase-login');
+
+      if (!supabaseClient) {
+        errorEl.textContent = '✕ Supabase is not connected. Please check configuration.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!email || !password) {
+        errorEl.textContent = '✕ Please enter both email and password.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Verifying with Supabase...';
+      errorEl.classList.add('hidden');
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        btn.disabled = false;
+        btn.textContent = 'Login with Supabase User →';
+
+        if (error) {
+          errorEl.textContent = '✕ ' + (error.message || 'Invalid email or password. Supabase me banaya gaya user enter karein.');
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        if (data && data.user) {
+          currentAuthUser = data.user;
+          sessionStorage.setItem('cdk_crm_auth', 'true');
+          sessionStorage.setItem('cdk_crm_email', data.user.email);
+          unlockCrmView(data.user.email);
+          toast(`✓ Welcome ${data.user.email}! Supabase Auth successful.`);
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Login with Supabase User →';
+        errorEl.textContent = '✕ Connection error: ' + err.message;
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function unlockCrmView(userLabel) {
+      $('#admin-login-view')?.classList.add('hidden');
+      $('#admin-panel-view')?.classList.remove('hidden');
+      $('#crm-export-btn')?.classList.remove('hidden');
+      $('#crm-lock-btn')?.classList.remove('hidden');
+      
+      const userBadge = $('#crm-user-badge');
+      if (userBadge) {
+        userBadge.textContent = '👤 ' + userLabel;
+        userBadge.classList.remove('hidden');
+      }
+
+      loadAdminData();
+    }
+
+    async function lockAdminPortal() {
+      sessionStorage.removeItem('cdk_crm_auth');
+      sessionStorage.removeItem('cdk_crm_email');
+      currentAuthUser = null;
+      if (supabaseClient) {
+        try { await supabaseClient.auth.signOut(); } catch (e) {}
+      }
+
+      $('#admin-login-view')?.classList.remove('hidden');
+      $('#admin-panel-view')?.classList.add('hidden');
+      $('#crm-export-btn')?.classList.add('hidden');
+      $('#crm-lock-btn')?.classList.add('hidden');
+      $('#crm-user-badge')?.classList.add('hidden');
+      if ($('#admin-password-input')) $('#admin-password-input').value = '';
+      toast('🔒 Logged out successfully');
+    }
+
+    async function checkSupabaseSession() {
+      if (!supabaseClient) return;
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session && session.user) {
+          currentAuthUser = session.user;
+          sessionStorage.setItem('cdk_crm_auth', 'true');
+          sessionStorage.setItem('cdk_crm_email', session.user.email);
+        }
+      } catch (err) {
+        console.warn('Session check note:', err);
+      }
+    }
+
+    async function refreshCrmData() {
+      toast('🔄 Syncing with Supabase...');
+      await syncSupabaseToTable();
+      await loadAdminData();
+      toast('✓ CRM synchronized with Supabase Database');
+    }
+
+    async function loadAdminData() {
+      const dbPill = $('#crm-db-pill');
+      if (dbPill) {
+        if (supabaseClient) {
+          dbPill.textContent = '🟢 Supabase Live';
+          dbPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]';
+        } else {
+          dbPill.textContent = '📁 Local Storage Mode';
+          dbPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-amber-50 text-amber-800 border-amber-200';
+        }
+      }
+
+      // 1. Fetch Campaigns
+      let campaigns = [];
+      if (supabaseClient) {
+        try {
+          const { data } = await supabaseClient.from('campaigns').select('*').order('created_at', { ascending: false });
+          if (data && data.length) campaigns = data;
+        } catch (e) { console.warn('Supabase campaigns fetch:', e); }
+      }
+      if (!campaigns.length) campaigns = storage.get('cdk-campaigns', []);
+      cachedCampaigns = campaigns;
+
+      // 2. Fetch Donations
+      let donations = [];
+      if (supabaseClient) {
+        try {
+          const { data } = await supabaseClient.from('donation_offers').select('*').order('created_at', { ascending: false });
+          if (data && data.length) donations = data;
+        } catch (e) { console.warn('Supabase donations fetch:', e); }
+      }
+      if (!donations.length) donations = storage.get('cdk-donation-offers', []);
+      cachedDonations = donations;
+
+      // 3. Calculate KPIs
+      const totalFundsGoal = campaigns.reduce((acc, c) => acc + (Number(c.goal) || 0), 0);
+      const pendingCount = donations.filter(d => (d.status === 'new' || d.status === 'pending' || !d.status)).length +
+                           campaigns.filter(c => (c.status === 'pending' || !c.status)).length;
+      const completedCount = donations.filter(d => d.status === 'completed').length +
+                             campaigns.filter(c => c.status === 'completed').length;
+
+      // 4. Update Metric elements
+      if ($('#metric-donations-count')) $('#metric-donations-count').textContent = donations.length;
+      if ($('#metric-campaigns-count')) $('#metric-campaigns-count').textContent = campaigns.length;
+      if ($('#metric-campaign-funds')) $('#metric-campaign-funds').textContent = '₹' + totalFundsGoal.toLocaleString('en-IN') + ' Total Goal';
+      if ($('#metric-pending-count')) $('#metric-pending-count').textContent = pendingCount;
+      if ($('#metric-completed-count')) $('#metric-completed-count').textContent = completedCount;
+      if ($('#crm-count-d')) $('#crm-count-d').textContent = donations.length;
+      if ($('#crm-count-c')) $('#crm-count-c').textContent = campaigns.length;
+
+      filterCrmTable();
+    }
+
+    function switchCrmTab(tab) {
+      crmActiveTab = tab;
+      $('#crm-tab-donations')?.classList.toggle('active', tab === 'donations');
+      $('#crm-tab-campaigns')?.classList.toggle('active', tab === 'campaigns');
+      filterCrmTable();
+    }
+
+    function filterCrmTable() {
+      const thead = $('#crm-table-head');
+      const tbody = $('#crm-table-body');
+      const noResults = $('#crm-no-results');
+      if (!thead || !tbody) return;
+
+      thead.replaceChildren();
+      tbody.replaceChildren();
+
+      const q = ($('#crm-search-input')?.value || '').toLowerCase().trim();
+      const statusFilter = ($('#crm-status-filter')?.value || '').toLowerCase().trim();
+      const locationFilter = ($('#crm-location-filter')?.value || '').toLowerCase().trim();
+
+      if (crmActiveTab === 'donations') {
+        thead.innerHTML = `
+          <tr>
+            <th>Date</th>
+            <th>Donor Lead</th>
+            <th>Contact & CRM Action</th>
+            <th>Items & Category</th>
+            <th>Pickup Mode</th>
+            <th>Pipeline Status</th>
+            <th class="text-right">Action</th>
+          </tr>
+        `;
+
+        const filtered = cachedDonations.filter(d => {
+          const status = (d.status || 'new').toLowerCase();
+          const matchesStatus = !statusFilter || (statusFilter === 'new' ? (status === 'new' || status === 'available' || status === 'pending') : status.includes(statusFilter));
+          const matchesLoc = !locationFilter || (d.place || '').toLowerCase().includes(locationFilter);
+          const matchesSearch = !q || (
+            (d.donor_name || '') + ' ' +
+            (d.phone || '') + ' ' +
+            (d.place || '') + ' ' +
+            (d.category || '') + ' ' +
+            (d.items_description || '')
+          ).toLowerCase().includes(q);
+          return matchesStatus && matchesLoc && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+          noResults?.classList.remove('hidden');
+          return;
+        }
+        noResults?.classList.add('hidden');
+
+        filtered.forEach((d, idx) => {
+          const dateStr = d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'Recent';
+          const currentStatus = d.status || 'new';
+          const waMsg = encodeURIComponent(`Namaste ${d.donor_name} ji! Hum Chalo Daan Kare community team se aapke "${d.category}" daan karne ke offer ke baare me sampark kar rahe hain. Kya hum aapse pickup coordinate kar sakte hain?`);
+          const waUrl = `https://wa.me/91${d.phone}?text=${waMsg}`;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="whitespace-nowrap text-muted">${dateStr}</td>
+            <td>
+              <div class="font-bold text-[#1e281b] text-sm">${d.donor_name}</div>
+              <div class="text-xs text-[#556350] flex items-center gap-1 mt-0.5">
+                <span>📍</span> <span>${d.place}</span>
+              </div>
+            </td>
+            <td>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <a href="${waUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#e8f5e9] hover:bg-[#c8e6c9] text-[#2e7d32] font-bold text-[11px] transition shadow-xs">
+                  <span>💬 WhatsApp</span>
+                </a>
+                <a href="tel:${d.phone}" class="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-semibold transition">
+                  📞 ${d.phone}
+                </a>
+              </div>
+            </td>
+            <td>
+              <span class="badge inline-block mb-1">${d.category}</span>
+              <p class="text-xs text-[#41533c] max-w-xs line-clamp-2" title="${d.items_description || ''}">
+                ${d.items_description || 'No description'}
+              </p>
+            </td>
+            <td>
+              <span class="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-medium">
+                ${d.pickup_type || 'Volunteer pickup'}
+              </span>
+            </td>
+            <td>
+              <select class="crm-status-select" onchange="updateLeadStatus(${idx}, this.value, 'donation')">
+                <option value="new" ${currentStatus === 'new' || currentStatus === 'available' ? 'selected' : ''}>🟡 New Lead</option>
+                <option value="contacted" ${currentStatus === 'contacted' ? 'selected' : ''}>🔵 Contacted</option>
+                <option value="scheduled" ${currentStatus === 'scheduled' ? 'selected' : ''}>🚚 Scheduled</option>
+                <option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>🟢 Completed</option>
+              </select>
+            </td>
+            <td class="text-right">
+              <button type="button" onclick="deleteLead(${idx}, 'donation')" class="text-gray-400 hover:text-[#8E2F2F] p-1.5 rounded transition" title="Delete record">
+                🗑️
+              </button>
+            </td>
+          `;
+          tbody.append(tr);
+        });
+
+      } else {
+        // Campaigns CRM Tab
+        thead.innerHTML = `
+          <tr>
+            <th>Date</th>
+            <th>Organizer / Cause</th>
+            <th>Contact & CRM Action</th>
+            <th>Category & Target</th>
+            <th>Story Details</th>
+            <th>Review Status</th>
+            <th class="text-right">Action</th>
+          </tr>
+        `;
+
+        const filtered = cachedCampaigns.filter(c => {
+          const status = (c.status || 'pending').toLowerCase();
+          const matchesStatus = !statusFilter || status.includes(statusFilter);
+          const matchesLoc = !locationFilter || (c.place || '').toLowerCase().includes(locationFilter);
+          const matchesSearch = !q || (
+            (c.organizer || '') + ' ' +
+            (c.phone || '') + ' ' +
+            (c.place || '') + ' ' +
+            (c.title || '') + ' ' +
+            (c.story || '')
+          ).toLowerCase().includes(q);
+          return matchesStatus && matchesLoc && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+          noResults?.classList.remove('hidden');
+          return;
+        }
+        noResults?.classList.add('hidden');
+
+        filtered.forEach((c, idx) => {
+          const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'Recent';
+          const currentStatus = c.status || 'pending';
+          const waMsg = encodeURIComponent(`Namaste ${c.organizer} ji! Chalo Daan Kare team se aapke campaign "${c.title}" ke verification ke silsile me sampark kar rahe hain.`);
+          const waUrl = `https://wa.me/91${c.phone}?text=${waMsg}`;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="whitespace-nowrap text-muted">${dateStr}</td>
+            <td>
+              <div class="font-bold text-[#1e281b] text-sm">${c.organizer}</div>
+              <div class="text-xs text-[#556350] flex items-center gap-1 mt-0.5">
+                <span>📍</span> <span>${c.place}</span>
+              </div>
+            </td>
+            <td>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <a href="${waUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#e8f5e9] hover:bg-[#c8e6c9] text-[#2e7d32] font-bold text-[11px] transition shadow-xs">
+                  <span>💬 WhatsApp</span>
+                </a>
+                <a href="tel:${c.phone}" class="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-semibold transition">
+                  📞 ${c.phone}
+                </a>
+              </div>
+            </td>
+            <td>
+              <span class="badge inline-block mb-1">${c.category}</span>
+              <div class="font-bold text-[#8E2F2F] text-xs">Goal: ₹${Number(c.goal || 0).toLocaleString('en-IN')}</div>
+            </td>
+            <td>
+              <div class="font-semibold text-xs text-[#1e281b] line-clamp-1">${c.title}</div>
+              <p class="text-xs text-muted max-w-xs line-clamp-2" title="${c.story || ''}">${c.story || ''}</p>
+            </td>
+            <td>
+              <div class="flex flex-col gap-1.5 items-start">
+                ${
+                  (currentStatus === 'pending' || !currentStatus)
+                    ? `<button type="button" onclick="approveCampaign(${idx})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs shadow-sm transition" title="Accept and publish to Community Request List">
+                        <span>✅ Accept & Publish</span>
+                       </button>
+                       <span class="crm-badge crm-badge-new text-[10.5px]">🟡 Awaiting Approval</span>`
+                    : `<div class="flex items-center gap-2 flex-wrap">
+                        <span class="crm-badge crm-badge-completed text-[10.5px]">🟢 Approved & Live</span>
+                        <button type="button" onclick="revokeCampaign(${idx})" class="text-[11px] text-gray-500 hover:text-amber-800 underline font-medium" title="Put on hold / unpublish">
+                          Put on Hold
+                        </button>
+                       </div>`
+                }
+                <div class="flex items-center gap-1.5 mt-1">
+                  <span class="text-[10px] text-muted">Status:</span>
+                  <select class="crm-status-select text-[11px] py-0.5 px-1.5" onchange="updateLeadStatus(${idx}, this.value, 'campaign')">
+                    <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>🟡 Pending</option>
+                    <option value="approved" ${currentStatus === 'approved' || currentStatus === 'verified' ? 'selected' : ''}>🟢 Approved</option>
+                    <option value="contacted" ${currentStatus === 'contacted' ? 'selected' : ''}>🔵 Contacted</option>
+                    <option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>✓ Completed</option>
+                  </select>
+                </div>
+              </div>
+            </td>
+            <td class="text-right">
+              <button type="button" onclick="deleteLead(${idx}, 'campaign')" class="text-gray-400 hover:text-[#8E2F2F] p-1.5 rounded transition" title="Delete record">
+                🗑️
+              </button>
+            </td>
+          `;
+          tbody.append(tr);
+        });
+      }
+    }
+
+    async function approveCampaign(index) {
+      const campaign = cachedCampaigns[index];
+      if (!campaign) return;
+
+      campaign.status = 'approved';
+      storage.set('cdk-campaigns', cachedCampaigns);
+
+      if (supabaseClient) {
+        try {
+          if (campaign.id) {
+            await supabaseClient.from('campaigns').update({ status: 'approved' }).eq('id', campaign.id);
+          } else {
+            await supabaseClient.from('campaigns').update({ status: 'approved' }).eq('title', campaign.title);
+          }
+        } catch (e) {
+          console.warn('Supabase campaign approval error:', e);
+        }
+      }
+
+      // Synchronize public Community Request List immediately!
+      initRequestsData();
+      renderRequests();
+      renderCategoryCards();
+      loadAdminData();
+
+      toast(`✅ "${campaign.organizer}" ka campaign accept ho gaya! Ab Community Request List me live hai.`);
+    }
+
+    async function revokeCampaign(index) {
+      const campaign = cachedCampaigns[index];
+      if (!campaign) return;
+
+      campaign.status = 'pending';
+      storage.set('cdk-campaigns', cachedCampaigns);
+
+      if (supabaseClient) {
+        try {
+          if (campaign.id) {
+            await supabaseClient.from('campaigns').update({ status: 'pending' }).eq('id', campaign.id);
+          } else {
+            await supabaseClient.from('campaigns').update({ status: 'pending' }).eq('title', campaign.title);
+          }
+        } catch (e) {
+          console.warn('Supabase campaign revoke error:', e);
+        }
+      }
+
+      // Remove from public Community Request List
+      initRequestsData();
+      renderRequests();
+      renderCategoryCards();
+      loadAdminData();
+
+      toast(`⏸️ "${campaign.organizer}" ka campaign put on hold kar diya gaya.`);
+    }
+
+    async function updateLeadStatus(index, newStatus, type) {
+      if (type === 'donation') {
+        if (cachedDonations[index]) {
+          cachedDonations[index].status = newStatus;
+          storage.set('cdk-donation-offers', cachedDonations);
+
+          if (supabaseClient && cachedDonations[index].id) {
+            try {
+              await supabaseClient.from('donation_offers').update({ status: newStatus }).eq('id', cachedDonations[index].id);
+            } catch (err) { console.warn('Supabase status update note:', err); }
+          }
+        }
+      } else {
+        if (cachedCampaigns[index]) {
+          cachedCampaigns[index].status = newStatus;
+          storage.set('cdk-campaigns', cachedCampaigns);
+
+          if (supabaseClient && cachedCampaigns[index].id) {
+            try {
+              await supabaseClient.from('campaigns').update({ status: newStatus }).eq('id', cachedCampaigns[index].id);
+            } catch (err) { console.warn('Supabase status update note:', err); }
+          }
+        }
+      }
+
+      initRequestsData();
+      renderRequests();
+      renderCategoryCards();
+      loadAdminData();
+      toast(`✓ Status updated to: ${newStatus}`);
+    }
+
+    async function deleteLead(index, type) {
+      if (!confirm('Are you sure you want to remove this record from CRM?')) return;
+
+      if (type === 'donation') {
+        const item = cachedDonations[index];
+        cachedDonations.splice(index, 1);
+        storage.set('cdk-donation-offers', cachedDonations);
+
+        if (supabaseClient && item && item.id) {
+          try {
+            await supabaseClient.from('donation_offers').delete().eq('id', item.id);
+          } catch (e) { console.warn(e); }
+        }
+      } else {
+        const item = cachedCampaigns[index];
+        cachedCampaigns.splice(index, 1);
+        storage.set('cdk-campaigns', cachedCampaigns);
+
+        if (supabaseClient && item && item.id) {
+          try {
+            await supabaseClient.from('campaigns').delete().eq('id', item.id);
+          } catch (e) { console.warn(e); }
+        }
+      }
+
+      toast('🗑️ Record removed from CRM');
+      initRequestsData();
+      renderRequests();
+      loadAdminData();
+    }
+
+    // 1-Click Secure Export to Excel / CSV from inside CRM
+    function exportSubmissionsToCSV() {
+      const campaigns = cachedCampaigns.length ? cachedCampaigns : storage.get('cdk-campaigns', []);
+      const donations = cachedDonations.length ? cachedDonations : storage.get('cdk-donation-offers', []);
+
+      let csvContent = "data:text/csv;charset=utf-8,";
+      if (crmActiveTab === 'campaigns') {
+        csvContent += "ID,Date,Organizer,Phone,City,Category,Goal_Amount,Title,Story,Status\n";
+        campaigns.forEach((c, i) => {
+          const row = [
+            i + 1,
+            c.created_at || '',
+            `"${(c.organizer || '').replace(/"/g, '""')}"`,
+            `"${c.phone || ''}"`,
+            `"${(c.place || '').replace(/"/g, '""')}"`,
+            `"${c.category || ''}"`,
+            c.goal || 0,
+            `"${(c.title || '').replace(/"/g, '""')}"`,
+            `"${(c.story || '').replace(/"/g, '""')}"`,
+            c.status || 'pending'
+          ].join(",");
+          csvContent += row + "\n";
+        });
+      } else {
+        csvContent += "ID,Date,Donor_Name,Phone,City,Category,Description,Pickup_Type,Status\n";
+        donations.forEach((d, i) => {
+          const row = [
+            i + 1,
+            d.created_at || '',
+            `"${(d.donor_name || '').replace(/"/g, '""')}"`,
+            `"${d.phone || ''}"`,
+            `"${(d.place || '').replace(/"/g, '""')}"`,
+            `"${d.category || ''}"`,
+            `"${(d.items_description || '').replace(/"/g, '""')}"`,
+            `"${d.pickup_type || ''}"`,
+            d.status || 'new'
+          ].join(",");
+          csvContent += row + "\n";
+        });
+      }
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `chalo_daan_kare_crm_${crmActiveTab}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast('📥 Downloaded CRM CSV spreadsheet successfully!');
+    }
+
+    // ==============================================================================
+    // 9. INITIAL LOAD & EVENT LISTENERS
+    // ==============================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCategoryCards();
+      renderRequests();
+      initMap();
+      updateDocChecklist();
+      syncSupabaseToTable();
+      checkSupabaseSession();
+
+      // Set Year in footer
+      const yearSpan = $('#year');
+      if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+      // Check if URL has #admin or #admin-portal hash to auto-open portal
+      const checkHashModal = () => {
+        if (window.location.hash === '#admin' || window.location.hash === '#admin-portal') {
+          openAdminModal();
+        }
+      };
+      checkHashModal();
+      window.addEventListener('hashchange', checkHashModal);
+    });
+  </script>
+</body>
+</html>
