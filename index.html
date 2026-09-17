@@ -223,6 +223,40 @@
       box-shadow: 0 4px 10px rgba(79,115,67,0.25);
     }
 
+    .category-chip {
+      border: 1.5px solid #d2dcc8;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #283426;
+      transition: all .15s ease;
+      user-select: none;
+    }
+    .category-chip:hover {
+      border-color: var(--green);
+      background: #f8faf5;
+    }
+    .category-chip.active-cat-chip,
+    .category-chip:has(input:checked) {
+      background: #eaf2e7 !important;
+      border-color: #3b5f30 !important;
+      color: #1e3318 !important;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(79,115,67,0.15);
+    }
+    .category-chip input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+      accent-color: var(--green);
+    }
+
     .progress { height: 8px; background: #e8ebdf; border-radius: 10px; overflow: hidden; }
     .progress span { display: block; height: 100%; background: var(--green); border-radius: 10px; transition: width .5s ease; }
     .badge { font-size: 12px; background: #eef3e8; color: #36572d; padding: 5px 12px; border-radius: 99px; font-weight: 700; letter-spacing: -0.01em; }
@@ -694,18 +728,35 @@
                 <label for="title">Campaign Title *</label>
                 <input id="title" required placeholder="e.g. Help Meera walk again after rehabilitation">
               </div>
-              <div>
-                <label for="category">Campaign Category *</label>
-                <select id="category" onchange="updateDocChecklist()">
-                  <option>Medical</option>
-                  <option>Education</option>
-                  <option>Animal Welfare</option>
-                  <option>NGO</option>
-                </select>
+              <!-- Multiple Choice Campaign Categories -->
+              <div class="sm:col-span-2">
+                <label class="block mb-1.5 font-medium text-sm text-[#1e281b]">
+                  Campaign Category * <span class="text-xs text-[#556350] font-normal">(Ek se zyada 2-3 categories bhi chunn sakte hain)</span>
+                </label>
+                <input type="hidden" id="category" value="Medical">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1" id="campaign-category-group">
+                  <label class="category-chip active-cat-chip">
+                    <input type="checkbox" name="campaign-category" value="Medical" checked onchange="updateDocChecklist()">
+                    <span>🩺 Medical</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="checkbox" name="campaign-category" value="Education" onchange="updateDocChecklist()">
+                    <span>📚 Education</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="checkbox" name="campaign-category" value="Animal Welfare" onchange="updateDocChecklist()">
+                    <span>🐾 Animal Welfare</span>
+                  </label>
+                  <label class="category-chip">
+                    <input type="checkbox" name="campaign-category" value="NGO" onchange="updateDocChecklist()">
+                    <span>🤝 NGO</span>
+                  </label>
+                </div>
               </div>
+
               <div>
-                <label for="goal">Target Goal Amount (₹) *</label>
-                <input id="goal" type="number" min="1000" max="10000000" step="100" required placeholder="e.g. 50000">
+                <label for="contact-person">Contact Person *</label>
+                <input id="contact-person" required placeholder="e.g. Mrs. Heena Kothari">
               </div>
               <div>
                 <label for="campaign-phone">Contact Phone / WhatsApp *</label>
@@ -1177,7 +1228,7 @@
       container.replaceChildren();
 
       donationCategories.forEach(cat => {
-        const count = peopleRequests.filter(r => r.category === cat.title).length;
+        const count = peopleRequests.filter(r => (r.category || '').includes(cat.title)).length;
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'card card-hover text-left transition ' + (selectedCategory === cat.title ? 'ring-2 ring-[#4F7343] bg-[#f0f3e9]' : '');
@@ -1241,10 +1292,11 @@
           name: c.organizer,
           place: c.place,
           category: c.category,
+          contact_person: c.contact_person || '',
           phone: c.phone,
-          desc: `${c.title}${c.goal ? ' · Target Goal: ₹' + Number(c.goal).toLocaleString('en-IN') : ''}`,
+          desc: `${c.title}${c.contact_person ? ' · Contact: ' + c.contact_person : ''}${c.goal ? ' · Target Goal: ₹' + Number(c.goal).toLocaleString('en-IN') : ''}`,
           type: 'campaign',
-          goal: c.goal,
+          goal: c.goal || 0,
           isApprovedCampaign: true
         }));
 
@@ -1291,10 +1343,11 @@
               name: c.organizer,
               place: c.place,
               category: c.category,
+              contact_person: c.contact_person || '',
               phone: c.phone,
-              desc: `${c.title}${c.goal ? ' · Target Goal: ₹' + Number(c.goal).toLocaleString('en-IN') : ''}`,
+              desc: `${c.title}${c.contact_person ? ' · Contact: ' + c.contact_person : ''}${c.goal ? ' · Target Goal: ₹' + Number(c.goal).toLocaleString('en-IN') : ''}`,
               type: 'campaign',
-              goal: c.goal,
+              goal: c.goal || 0,
               isApprovedCampaign: true
             }));
         }
@@ -1318,7 +1371,7 @@
       tbody.replaceChildren();
 
       const matches = peopleRequests.filter(r => {
-        const matchesCat = !selectedCategory || r.category === selectedCategory;
+        const matchesCat = !selectedCategory || (r.category && r.category.includes(selectedCategory));
         const matchesPlace = !selectedPlace || r.place.toLowerCase().includes(selectedPlace.toLowerCase());
         const matchesText = !q || (r.name + ' ' + r.place + ' ' + r.category + ' ' + (r.desc || '')).toLowerCase().includes(q);
         return matchesCat && matchesPlace && matchesText;
@@ -1358,7 +1411,9 @@
           </td>
           <td data-label="Place" class="text-sm font-medium text-[#445240]">📍 ${r.place}</td>
           <td data-label="Looking For">
-            <span class="badge">${r.category}</span>
+            <div class="flex flex-wrap gap-1">
+              ${(r.category || 'General').split(',').map(c => `<span class="badge inline-block">${c.trim()}</span>`).join('')}
+            </div>
           </td>
           <td data-label="Action">
             <div class="flex items-center gap-2 flex-wrap">
@@ -1473,7 +1528,7 @@
 
       const filtered = markers.filter(m => {
         const matchesType = (mapType === 'all' || m.type === mapType);
-        const matchesCat = !selectedCategory || m.category === selectedCategory;
+        const matchesCat = !selectedCategory || (m.category && m.category.includes(selectedCategory));
         const matchesLoc = !q || m.place.toLowerCase().includes(q) || (q === 'mumbai' && m.place.toLowerCase().includes('mumbai'));
         return matchesType && matchesCat && matchesLoc;
       });
@@ -1581,9 +1636,27 @@
     }
 
     function updateDocChecklist() {
-      const cat = $('#category').value;
+      const selectedBoxes = Array.from(document.querySelectorAll('input[name="campaign-category"]:checked'));
+      const selectedCats = selectedBoxes.map(cb => cb.value);
+
+      // Sync hidden input
+      const catInput = $('#category');
+      if (catInput) catInput.value = selectedCats.join(', ');
+
+      // Update chip styling
+      document.querySelectorAll('.category-chip').forEach(chip => {
+        const input = chip.querySelector('input');
+        if (input && input.checked) {
+          chip.classList.add('active-cat-chip');
+        } else {
+          chip.classList.remove('active-cat-chip');
+        }
+      });
+
       const animalFieldset = $('#animal-details');
-      animalFieldset.classList.toggle('hidden', cat !== 'Animal Welfare');
+      if (animalFieldset) {
+        animalFieldset.classList.toggle('hidden', !selectedCats.includes('Animal Welfare'));
+      }
 
       const docsMap = {
         'Medical': 'Hospital letterhead, Patient Aadhaar/ID, Doctor prescription, Cost estimate.',
@@ -1591,7 +1664,17 @@
         'Animal Welfare': 'Gaushala/NGO authorization or rescuer ID, feeding/care budget plan.',
         'NGO': 'Trust Deed / 80G / 12A Certificate, PAN card, Activity report.'
       };
-      $('#doc-checklist').textContent = docsMap[cat] || 'Identity proof and verification document.';
+
+      const checklistEl = $('#doc-checklist');
+      if (checklistEl) {
+        if (selectedCats.length === 0) {
+          checklistEl.innerHTML = '<span class="text-amber-800 font-semibold">⚠️ Kripya upar kam se kam ek category select karein.</span>';
+        } else if (selectedCats.length === 1) {
+          checklistEl.textContent = docsMap[selectedCats[0]] || 'Identity proof and verification document.';
+        } else {
+          checklistEl.innerHTML = selectedCats.map(c => `• <strong>${c}:</strong> ${docsMap[c] || 'Verification documents'}`).join('<br>');
+        }
+      }
     }
 
     // A. Submit Physical Item Donation
@@ -1692,6 +1775,14 @@
       e.preventDefault();
       const btn = $('#btn-submit-campaign');
       const statusText = $('#campaign-form-status');
+
+      const selectedCats = Array.from(document.querySelectorAll('input[name="campaign-category"]:checked')).map(cb => cb.value);
+      if (selectedCats.length === 0) {
+        toast('⚠️ Kripya kam se kam ek category chunein!');
+        return;
+      }
+      const categoryValue = selectedCats.join(', ');
+
       btn.disabled = true;
       btn.textContent = 'Saving Campaign...';
 
@@ -1699,8 +1790,9 @@
         organizer: $('#organizer').value.trim(),
         place: $('#place').value.trim(),
         title: $('#title').value.trim(),
-        category: $('#category').value,
-        goal: Number($('#goal').value),
+        category: categoryValue,
+        contact_person: $('#contact-person')?.value.trim() || '',
+        goal: 0,
         phone: $('#campaign-phone').value.trim(),
         story: $('#story').value.trim(),
         animal_type: $('#animal-type')?.value || '',
@@ -1715,10 +1807,11 @@
         name: payload.organizer,
         place: payload.place,
         category: payload.category,
+        contact_person: payload.contact_person,
         phone: payload.phone,
-        desc: `${payload.title}${payload.goal ? ' · Target Goal: ₹' + Number(payload.goal).toLocaleString('en-IN') : ''}`,
+        desc: `${payload.title}${payload.contact_person ? ' · Contact: ' + payload.contact_person : ''}`,
         type: 'campaign',
-        goal: payload.goal,
+        goal: 0,
         isApprovedCampaign: true,
         isNew: true
       };
@@ -1735,9 +1828,18 @@
       let savedToSupabase = false;
       if (supabaseClient) {
         try {
-          const { error } = await supabaseClient.from('campaigns').insert([payload]);
-          if (!error) savedToSupabase = true;
-          else console.warn('Supabase insert note:', error.message);
+          let { error } = await supabaseClient.from('campaigns').insert([payload]);
+          if (error && error.message && error.message.toLowerCase().includes('contact_person')) {
+            const fallbackPayload = { ...payload };
+            delete fallbackPayload.contact_person;
+            const res = await supabaseClient.from('campaigns').insert([fallbackPayload]);
+            if (!res.error) savedToSupabase = true;
+            else console.warn('Supabase fallback insert note:', res.error.message);
+          } else if (!error) {
+            savedToSupabase = true;
+          } else {
+            console.warn('Supabase insert note:', error.message);
+          }
         } catch (err) {
           console.warn('Supabase network error:', err);
         }
@@ -1761,6 +1863,7 @@
         popupDiv.innerHTML = `
           <strong class="text-sm block mb-1 text-[#283426]">${payload.organizer}</strong>
           <span class="badge mb-2 inline-block">♥ Campaign · ${payload.category}</span>
+          ${payload.contact_person ? `<p class="text-xs text-[#283426] font-semibold mb-1">👤 ${payload.contact_person}</p>` : ''}
           <p class="muted mb-2">📍 ${payload.place}</p>
           <a href="https://wa.me/91${payload.phone}" target="_blank" class="chip text-xs py-1 px-3 w-full justify-center text-[#2e7d32] font-bold">
             Chat on WhatsApp ↗
@@ -1975,7 +2078,11 @@
       // 4. Update Metric elements
       if ($('#metric-donations-count')) $('#metric-donations-count').textContent = donations.length;
       if ($('#metric-campaigns-count')) $('#metric-campaigns-count').textContent = campaigns.length;
-      if ($('#metric-campaign-funds')) $('#metric-campaign-funds').textContent = '₹' + totalFundsGoal.toLocaleString('en-IN') + ' Total Goal';
+      if ($('#metric-campaign-funds')) {
+        $('#metric-campaign-funds').textContent = totalFundsGoal > 0 
+          ? '₹' + totalFundsGoal.toLocaleString('en-IN') + ' Total Goal' 
+          : campaigns.length + ' Active Causes';
+      }
       if ($('#metric-pending-count')) $('#metric-pending-count').textContent = pendingCount;
       if ($('#metric-completed-count')) $('#metric-completed-count').textContent = completedCount;
       if ($('#crm-count-d')) $('#crm-count-d').textContent = donations.length;
@@ -2110,6 +2217,7 @@
           const matchesLoc = !locationFilter || (c.place || '').toLowerCase().includes(locationFilter);
           const matchesSearch = !q || (
             (c.organizer || '') + ' ' +
+            (c.contact_person || '') + ' ' +
             (c.phone || '') + ' ' +
             (c.place || '') + ' ' +
             (c.title || '') + ' ' +
@@ -2140,6 +2248,7 @@
               </div>
             </td>
             <td>
+              ${c.contact_person ? `<div class="font-semibold text-xs text-[#1e281b] mb-1">👤 ${c.contact_person}</div>` : ''}
               <div class="flex items-center gap-1.5 flex-wrap">
                 <a href="${waUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#e8f5e9] hover:bg-[#c8e6c9] text-[#2e7d32] font-bold text-[11px] transition shadow-xs">
                   <span>💬 WhatsApp</span>
@@ -2150,8 +2259,10 @@
               </div>
             </td>
             <td>
-              <span class="badge inline-block mb-1">${c.category}</span>
-              <div class="font-bold text-[#8E2F2F] text-xs">Goal: ₹${Number(c.goal || 0).toLocaleString('en-IN')}</div>
+              <div class="flex flex-wrap gap-1 mb-1">
+                ${(c.category || 'General').split(',').map(cat => `<span class="badge inline-block">${cat.trim()}</span>`).join('')}
+              </div>
+              ${c.goal ? `<div class="font-bold text-[#8E2F2F] text-xs">Goal: ₹${Number(c.goal).toLocaleString('en-IN')}</div>` : ''}
             </td>
             <td>
               <div class="font-semibold text-xs text-[#1e281b] line-clamp-1">${c.title}</div>
@@ -2323,16 +2434,16 @@
 
       let csvContent = "data:text/csv;charset=utf-8,";
       if (crmActiveTab === 'campaigns') {
-        csvContent += "ID,Date,Organizer,Phone,City,Category,Goal_Amount,Title,Story,Status\n";
+        csvContent += "ID,Date,Organizer,Contact_Person,Phone,City,Category,Title,Story,Status\n";
         campaigns.forEach((c, i) => {
           const row = [
             i + 1,
             c.created_at || '',
             `"${(c.organizer || '').replace(/"/g, '""')}"`,
+            `"${(c.contact_person || '').replace(/"/g, '""')}"`,
             `"${c.phone || ''}"`,
             `"${(c.place || '').replace(/"/g, '""')}"`,
             `"${c.category || ''}"`,
-            c.goal || 0,
             `"${(c.title || '').replace(/"/g, '""')}"`,
             `"${(c.story || '').replace(/"/g, '""')}"`,
             c.status || 'pending'

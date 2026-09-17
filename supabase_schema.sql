@@ -15,6 +15,7 @@ create table if not exists public.campaigns (
   place text not null,
   title text not null,
   category text not null,
+  contact_person text default '',
   goal numeric not null default 0,
   story text not null,
   phone text default '',
@@ -25,6 +26,9 @@ create table if not exists public.campaigns (
   documents_info text default '',
   status text default 'pending' -- 'pending', 'approved', 'completed', 'rejected'
 );
+
+-- If you already created public.campaigns previously, run this one-line command to add contact_person:
+-- ALTER TABLE public.campaigns ADD COLUMN IF NOT EXISTS contact_person text default '';
 
 -- 2. Table for Physical Item Donations (कपड़े, किताबें, खिलौने, राशन आदि)
 create table if not exists public.donation_offers (
