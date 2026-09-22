@@ -666,7 +666,7 @@
             <div class="grid sm:grid-cols-2 gap-4">
               <div>
                 <label for="donor-place">Area / City *</label>
-                <input id="donor-place" required placeholder="e.g. Thane West, Dadar, Kalyan">
+                <input id="donor-place" required placeholder="e.g. Thane West, Dadar, Kalyan" list="location-options">
               </div>
               <div>
                 <label for="donor-category">Item Category *</label>
@@ -722,7 +722,7 @@
               </div>
               <div>
                 <label for="place">City / Place *</label>
-                <input id="place" required placeholder="e.g. Mulund, Mumbai">
+                <input id="place" required placeholder="e.g. Mulund, Mumbai" list="location-options">
               </div>
               <div class="sm:col-span-2">
                 <label for="title">Campaign Title *</label>
@@ -1439,25 +1439,185 @@
     }
 
     // ==============================================================================
-    // 5. INTERACTIVE LEAFLET MAP
+    // 5. INTERACTIVE LEAFLET MAP & SMART LOCATION ENGINE
     // ==============================================================================
     let map = null;
     let markers = [];
     let mapType = 'all';
 
+    // Comprehensive Mumbai, Thane & MMR Area Coordinates
     const mapCoordinates = {
+      // Thane & Environs
       'Thane': [19.2183, 72.9781],
       'Thane West': [19.2050, 72.9650],
+      'Thane East': [19.1860, 72.9750],
+      'Yeoor Hills': [19.2270, 72.9420],
+      'Yeoor': [19.2270, 72.9420],
+      'Naupada': [19.1915, 72.9693],
+      'Panchpakhadi': [19.1990, 72.9670],
+      'Vartak Nagar': [19.2130, 72.9550],
+      'Majiwada': [19.2160, 72.9850],
+      'Kapurbawdi': [19.2230, 72.9810],
+      'Wagle Estate': [19.1950, 72.9480],
+      'Ghodbunder Road': [19.2650, 72.9230],
+      'Ghodbunder': [19.2650, 72.9230],
+      'Kopri': [19.1780, 72.9730],
+      'Kalwa': [19.1980, 72.9980],
+      'Mumbra': [19.1906, 73.0229],
+      'Diva': [19.1884, 73.0425],
+
+      // Central & South Mumbai
+      'Byculla': [18.9774, 72.8335],
+      'Byculla East': [18.9774, 72.8350],
+      'Byculla West': [18.9750, 72.8290],
+      'Dadar': [19.0176, 72.8562],
       'Dadar, Mumbai': [19.0176, 72.8562],
-      'Kalyan': [19.2403, 73.1305],
-      'Mulund': [19.1726, 72.9565],
-      'Dombivli': [19.2183, 73.0865],
-      'Navi Mumbai': [19.0330, 73.0297],
-      'Bhandup': [19.1510, 72.9370],
-      'Borivali': [19.2307, 72.8567],
+      'Dadar East': [19.0180, 72.8460],
+      'Dadar West': [19.0190, 72.8390],
       'Mumbai Central': [18.9690, 72.8190],
-      'Bandra': [19.0596, 72.8295]
+      'Parel': [19.0084, 72.8397],
+      'Lower Parel': [18.9950, 72.8300],
+      'Worli': [19.0166, 72.8166],
+      'Mahalaxmi': [18.9827, 72.8240],
+      'Girgaon': [18.9558, 72.8189],
+      'Charni Road': [18.9515, 72.8187],
+      'Marine Lines': [18.9447, 72.8244],
+      'Fort': [18.9322, 72.8350],
+      'Colaba': [18.9067, 72.8147],
+      'Sion': [19.0400, 72.8640],
+
+      // Eastern Suburbs
+      'Mulund Colony': [19.1760, 72.9380],
+      'Mulund West': [19.1730, 72.9490],
+      'Mulund East': [19.1710, 72.9640],
+      'Mulund': [19.1726, 72.9565],
+      'Nahur': [19.1585, 72.9460],
+      'Bhandup West': [19.1490, 72.9320],
+      'Bhandup East': [19.1530, 72.9420],
+      'Bhandup': [19.1510, 72.9370],
+      'Kanjurmarg': [19.1310, 72.9350],
+      'Vikhroli': [19.1110, 72.9280],
+      'Ghatkopar East': [19.0820, 72.9150],
+      'Ghatkopar West': [19.0900, 72.9000],
+      'Ghatkopar': [19.0860, 72.9090],
+      'Vidyavihar': [19.0790, 72.8970],
+      'Kurla': [19.0726, 72.8845],
+      'Chembur': [19.0522, 72.8995],
+      'Deonar': [19.0570, 72.9180],
+      'Govandi': [19.0550, 72.9150],
+      'Mankhurd': [19.0490, 72.9320],
+      'Powai': [19.1176, 72.9060],
+
+      // Western Suburbs
+      'Bandra West': [19.0600, 72.8250],
+      'Bandra East': [19.0620, 72.8450],
+      'Bandra': [19.0596, 72.8295],
+      'Khar': [19.0700, 72.8330],
+      'Santacruz': [19.0805, 72.8410],
+      'Vile Parle': [19.0998, 72.8438],
+      'Andheri West': [19.1200, 72.8300],
+      'Andheri East': [19.1150, 72.8650],
+      'Andheri': [19.1197, 72.8464],
+      'Jogeshwari': [19.1378, 72.8498],
+      'Goregaon West': [19.1650, 72.8420],
+      'Goregaon East': [19.1680, 72.8630],
+      'Goregaon': [19.1663, 72.8526],
+      'Malad West': [19.1850, 72.8400],
+      'Malad East': [19.1900, 72.8580],
+      'Malad': [19.1874, 72.8484],
+      'Kandivali': [19.2062, 72.8530],
+      'Borivali West': [19.2320, 72.8480],
+      'Borivali East': [19.2290, 72.8640],
+      'Borivali': [19.2307, 72.8567],
+      'Dahisar': [19.2500, 72.8590],
+
+      // Navi Mumbai
+      'Vashi': [19.0770, 72.9986],
+      'Sanpada': [19.0650, 73.0100],
+      'Juinagar': [19.0550, 73.0180],
+      'Nerul': [19.0330, 73.0166],
+      'Seawoods': [19.0180, 73.0160],
+      'CBD Belapur': [19.0144, 73.0388],
+      'Belapur': [19.0144, 73.0388],
+      'Kharghar': [19.0473, 73.0699],
+      'Panvel': [18.9894, 73.1175],
+      'Airoli': [19.1579, 72.9935],
+      'Rabale': [19.1350, 73.0030],
+      'Ghansoli': [19.1250, 73.0080],
+      'Kopar Khairane': [19.0980, 73.0120],
+      'Navi Mumbai': [19.0330, 73.0297],
+
+      // Extended MMR
+      'Kalyan West': [19.2420, 73.1250],
+      'Kalyan East': [19.2380, 73.1380],
+      'Kalyan': [19.2403, 73.1305],
+      'Dombivli West': [19.2150, 73.0800],
+      'Dombivli East': [19.2200, 73.0930],
+      'Dombivli': [19.2183, 73.0865],
+      'Ulhasnagar': [19.2215, 73.1645],
+      'Ambarnath': [19.1980, 73.1930],
+      'Badlapur': [19.1550, 73.2300],
+      'Bhiwandi': [19.2967, 73.0631],
+      'Mira Road': [19.2812, 72.8561],
+      'Bhayandar': [19.3015, 72.8503],
+      'Vasai': [19.3800, 72.8300],
+      'Virar': [19.4700, 72.8000],
+
+      // Other Cities
+      'Mumbai': [19.0760, 72.8777],
+      'Pune': [18.5204, 73.8567],
+      'Nashik': [19.9975, 73.7898],
+      'Sukma': [18.7950, 81.6580],
+      'Delhi': [28.6139, 77.2090]
     };
+
+    // Smart resolver to match full addresses or keywords to accurate coordinates
+    function resolveLocationCoords(placeStr, markerIndex = 0) {
+      if (!placeStr || typeof placeStr !== 'string') {
+        return getClusterJitter([19.2050, 72.9750], markerIndex);
+      }
+
+      const raw = placeStr.trim();
+      const lower = (' ' + raw.toLowerCase().replace(/[,./\\_\-()]/g, ' ') + ' ').replace(/\s+/g, ' ');
+
+      // 1. Direct case-insensitive match
+      for (const [key, coords] of Object.entries(mapCoordinates)) {
+        if (key.toLowerCase() === raw.toLowerCase()) {
+          return getClusterJitter(coords, markerIndex);
+        }
+      }
+
+      // 2. Keyword substring matching — longest and most specific areas first
+      const sortedKeys = Object.keys(mapCoordinates).sort((a, b) => b.length - a.length);
+      for (const key of sortedKeys) {
+        const keyLower = key.toLowerCase();
+        // Check word boundary in sanitized address
+        if (lower.includes(' ' + keyLower + ' ') || lower.includes(keyLower)) {
+          return getClusterJitter(mapCoordinates[key], markerIndex);
+        }
+      }
+
+      // 3. Fallback: Natural circular distribution around Thane/Central Mumbai (NO diagonal straight line)
+      let hash = 0;
+      for (let j = 0; j < raw.length; j++) {
+        hash = ((hash << 5) - hash) + raw.charCodeAt(j);
+        hash |= 0;
+      }
+      const angle = (Math.abs(hash) % 360) * (Math.PI / 180);
+      const dist = 0.012 + ((Math.abs(hash) % 100) / 100) * 0.03;
+      return [19.1850 + (Math.sin(angle) * dist), 72.9650 + (Math.cos(angle) * dist)];
+    }
+
+    // Circular jitter: Prevents multiple pins at the same location from overlapping or lining up diagonally
+    function getClusterJitter(baseCoords, index = 0) {
+      if (index === 0) return [baseCoords[0], baseCoords[1]];
+      const angle = (index * 137.5) * (Math.PI / 180); // Golden angle
+      const radius = 0.0012 + ((index % 5) * 0.0007); // ~120m to ~400m
+      return [
+        baseCoords[0] + (Math.sin(angle) * radius),
+        baseCoords[1] + (Math.cos(angle) * radius)
+      ];
+    }
 
     function syncMapMarkers() {
       if (!map || !window.L) return;
@@ -1466,7 +1626,7 @@
 
       markers = peopleRequests.map((r, i) => {
         const isFund = r.type === 'campaign';
-        const coords = mapCoordinates[r.place] || [19.14 + ((i % 10) * 0.01), 72.96 + ((i % 10) * 0.01)];
+        const coords = resolveLocationCoords(r.place, i);
         const iconHtml = `<div class="map-pin" style="background: ${isFund ? '#8E2F2F' : '#4F7343'}">${isFund ? '♥' : '🎁'}</div>`;
         
         const popupDiv = document.createElement('div');
@@ -1475,18 +1635,18 @@
           <strong class="text-sm block mb-1 text-[#283426]">${r.name}</strong>
           <span class="badge mb-2 inline-block">${r.category}</span>
           <p class="muted mb-2">📍 ${r.place}</p>
-          <button type="button" class="chip text-xs py-1 px-3 w-full justify-center" onclick="filterByPlace('${r.place}')">
+          <button type="button" class="chip text-xs py-1 px-3 w-full justify-center" onclick="filterByPlace('${r.place.replace(/'/g, "\\'")}')">
             Show in list →
           </button>
         `;
 
-        const marker = L.marker([coords[0] + (i * 0.0003), coords[1] + (i * 0.0002)], {
+        const marker = L.marker(coords, {
           title: r.name,
           icon: L.divIcon({
             className: '',
             html: iconHtml,
             iconSize: [38, 38],
-            iconAnchor: [19, 38]
+            iconAnchor: [19, 19]
           })
         }).bindPopup(popupDiv).addTo(map);
 
@@ -1501,18 +1661,26 @@
       if (!mapEl || !window.L) return;
 
       mapEl.replaceChildren();
-      map = L.map('map', { scrollWheelZoom: false }).setView([19.14, 72.96], 10);
+      map = L.map('map', { scrollWheelZoom: false }).setView([19.185, 72.975], 11);
       
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri &mdash; Mumbai & Thane Community Map',
         maxZoom: 18
       }).addTo(map);
 
-      // Populate datalist for search
+      // Populate datalist for search & forms
       const datalist = $('#location-options');
       if (datalist) {
         datalist.replaceChildren();
-        Object.keys(mapCoordinates).forEach(c => {
+        // Clean list of unique main areas for autocomplete
+        const popularAreas = [
+          'Thane', 'Thane West', 'Naupada', 'Yeoor Hills', 'Wagle Estate', 'Majiwada', 'Ghodbunder Road',
+          'Mulund', 'Mulund West', 'Mulund Colony', 'Bhandup', 'Kanjurmarg', 'Vikhroli', 'Powai', 'Ghatkopar',
+          'Kurla', 'Chembur', 'Deonar', 'Dadar', 'Byculla', 'Byculla East', 'Mumbai Central', 'Worli', 'Colaba',
+          'Bandra', 'Bandra West', 'Andheri', 'Andheri West', 'Andheri East', 'Goregaon', 'Malad', 'Borivali',
+          'Vashi', 'Nerul', 'Kharghar', 'Belapur', 'Panvel', 'Airoli', 'Kalyan', 'Dombivli', 'Mira Road'
+        ];
+        popularAreas.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c;
           datalist.append(opt);
@@ -1542,7 +1710,16 @@
         map.setView(filtered[0].marker.getLatLng(), 13);
         filtered[0].marker.openPopup();
       } else if (filtered.length > 1) {
-        const group = L.featureGroup(filtered.map(f => f.marker));
+        // When no specific search query is given, prioritize bounds around Mumbai-Thane region
+        const localMarkers = (!q)
+          ? filtered.filter(f => {
+              const pos = f.marker.getLatLng();
+              return pos.lat >= 18.5 && pos.lat <= 19.8 && pos.lng >= 72.5 && pos.lng <= 73.5;
+            })
+          : filtered;
+
+        const targetGroup = localMarkers.length ? localMarkers : filtered;
+        const group = L.featureGroup(targetGroup.map(f => f.marker));
         map.fitBounds(group.getBounds(), { padding: [35, 35], maxZoom: 12 });
       }
 
@@ -1569,7 +1746,7 @@
       if ($('#location-search')) $('#location-search').value = '';
       renderRequests();
       filterMap();
-      if (map) map.setView([19.14, 72.96], 10);
+      if (map) map.setView([19.185, 72.975], 11);
     }
 
     function detectUserLocation() {
@@ -1727,31 +1904,10 @@
         }
       }
 
-      // 5. Update UI immediately!
+      // 5. Update UI & Map immediately!
       renderRequests();
       renderCategoryCards();
-
-      // 6. Add pin to map if coords available
-      if (map && window.L) {
-        const coords = mapCoordinates[payload.place] || [19.14 + (Math.random() * 0.05), 72.96 + (Math.random() * 0.05)];
-        const markerIcon = L.divIcon({
-          className: '',
-          html: '<div class="map-pin" style="background: #4F7343">🎁</div>',
-          iconSize: [38, 38],
-          iconAnchor: [19, 38]
-        });
-        const popupDiv = document.createElement('div');
-        popupDiv.className = 'text-xs p-1';
-        popupDiv.innerHTML = `
-          <strong class="text-sm block mb-1 text-[#283426]">${payload.donor_name}</strong>
-          <span class="badge mb-2 inline-block">🎁 Donor Offer · ${payload.category}</span>
-          <p class="muted mb-2">📍 ${payload.place}</p>
-          <a href="https://wa.me/91${payload.phone}" target="_blank" class="chip text-xs py-1 px-3 w-full justify-center text-[#2e7d32] font-bold">
-            Chat on WhatsApp ↗
-          </a>
-        `;
-        L.marker(coords, { title: payload.donor_name, icon: markerIcon }).bindPopup(popupDiv).addTo(map);
-      }
+      syncMapMarkers();
 
       btn.disabled = false;
       btn.textContent = 'Submit Donation Offer ↗';
@@ -1845,32 +2001,10 @@
         }
       }
 
-      // 5. Update UI immediately!
+      // 5. Update UI & Map immediately!
       renderRequests();
       renderCategoryCards();
-
-      // 6. Add pin to map if coords available
-      if (map && window.L) {
-        const coords = mapCoordinates[payload.place] || [19.14 + (Math.random() * 0.05), 72.96 + (Math.random() * 0.05)];
-        const markerIcon = L.divIcon({
-          className: '',
-          html: '<div class="map-pin" style="background: #8E2F2F">♥</div>',
-          iconSize: [38, 38],
-          iconAnchor: [19, 38]
-        });
-        const popupDiv = document.createElement('div');
-        popupDiv.className = 'text-xs p-1';
-        popupDiv.innerHTML = `
-          <strong class="text-sm block mb-1 text-[#283426]">${payload.organizer}</strong>
-          <span class="badge mb-2 inline-block">♥ Campaign · ${payload.category}</span>
-          ${payload.contact_person ? `<p class="text-xs text-[#283426] font-semibold mb-1">👤 ${payload.contact_person}</p>` : ''}
-          <p class="muted mb-2">📍 ${payload.place}</p>
-          <a href="https://wa.me/91${payload.phone}" target="_blank" class="chip text-xs py-1 px-3 w-full justify-center text-[#2e7d32] font-bold">
-            Chat on WhatsApp ↗
-          </a>
-        `;
-        L.marker(coords, { title: payload.organizer, icon: markerIcon }).bindPopup(popupDiv).addTo(map);
-      }
+      syncMapMarkers();
 
       btn.disabled = false;
       btn.textContent = 'Save & Submit Campaign ↗';
