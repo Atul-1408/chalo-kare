@@ -444,17 +444,17 @@
         </div>
 
         <!-- Live Impact Stats -->
-        <div class="grid grid-cols-3 gap-4 mt-10 pt-8 border-t border-[#e4e6da]">
+        <div class="grid grid-cols-3 gap-4 mt-10 pt-8 border-t border-[#e4e6da]" id="hero-stats">
           <div>
-            <div class="text-2xl md:text-3xl font-bold text-[#4F7343] serif">1,450+</div>
+            <div class="text-2xl md:text-3xl font-bold text-[#4F7343] serif stat-counter" data-start="0" data-target="1450" data-prefix="" data-suffix="+" data-decimals="0">1,450+</div>
             <div class="text-xs muted mt-0.5 font-medium">Items Shared</div>
           </div>
           <div>
-            <div class="text-2xl md:text-3xl font-bold text-[#8E2F2F] serif">₹18.5L+</div>
+            <div class="text-2xl md:text-3xl font-bold text-[#8E2F2F] serif stat-counter" data-start="1" data-target="10" data-prefix="₹" data-suffix="L+" data-decimals="1">₹10L+</div>
             <div class="text-xs muted mt-0.5 font-medium">Causes Funded</div>
           </div>
           <div>
-            <div class="text-2xl md:text-3xl font-bold text-[#283426] serif">45+</div>
+            <div class="text-2xl md:text-3xl font-bold text-[#283426] serif stat-counter" data-start="0" data-target="45" data-prefix="" data-suffix="+" data-decimals="0">45+</div>
             <div class="text-xs muted mt-0.5 font-medium">Local Communities</div>
           </div>
         </div>
@@ -2612,10 +2612,69 @@
       toast('📥 Downloaded CRM CSV spreadsheet successfully!');
     }
 
+    // Animated Countdown / Count-up Stats Counter
+    function animateStatsCounters() {
+      const counters = document.querySelectorAll('.stat-counter');
+      if (!counters.length) return;
+
+      const runCounter = (el) => {
+        const target = parseFloat(el.getAttribute('data-target')) || 0;
+        const start = parseFloat(el.getAttribute('data-start')) || 0;
+        const prefix = el.getAttribute('data-prefix') || '';
+        const suffix = el.getAttribute('data-suffix') || '';
+        const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+        const duration = 2000; // 2 seconds smooth animation
+        let startTimestamp = null;
+
+        const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          // Ease-out cubic for smooth deceleration
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          const currentVal = start + (target - start) * easeOut;
+
+          let displayVal;
+          if (progress >= 1) {
+            displayVal = decimals > 0 && target % 1 !== 0 
+              ? target.toFixed(decimals) 
+              : (decimals > 0 ? target.toFixed(0) : target.toLocaleString());
+          } else {
+            displayVal = decimals > 0 
+              ? currentVal.toFixed(decimals) 
+              : Math.floor(currentVal).toLocaleString();
+          }
+
+          el.textContent = `${prefix}${displayVal}${suffix}`;
+
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          }
+        };
+
+        window.requestAnimationFrame(step);
+      };
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              runCounter(entry.target);
+              obs.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1 });
+
+        counters.forEach(c => observer.observe(c));
+      } else {
+        counters.forEach(c => runCounter(c));
+      }
+    }
+
     // ==============================================================================
     // 9. INITIAL LOAD & EVENT LISTENERS
     // ==============================================================================
     document.addEventListener('DOMContentLoaded', () => {
+      animateStatsCounters();
       renderCategoryCards();
       renderRequests();
       initMap();
